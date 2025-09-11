@@ -16,6 +16,7 @@
     "openai": "^5.20.1",
     "pdf-parse": "^1.1.1",
     "formidable": "^3.5.1",
-    "similarity-search": "^3.0.0"
+    "langchain": "^0.2.11",
+    "@langchain/openai": "^0.0.35"
   }
 }
