@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,6 +14,8 @@
     "@vercel/kv": "^3.0.0",
     "body-parser": "^2.2.0",
     "openai": "^5.20.1",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "formidable": "^3.5.1",
+    "similarity-search": "^3.0.0"
   }
 }
