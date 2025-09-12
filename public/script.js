@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const chatForm = document.getElementById('chat-form');
     const resumeUpload = document.getElementById('resume-upload');
+    let sessionId = sessionStorage.getItem('sessionId') || `session-${Date.now()}`;
+    sessionStorage.setItem('sessionId', sessionId);
 
     function appendMessage(sender, message) {
         const messageElement = document.createElement('div');
@@ -12,25 +14,27 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function sendMessage(message) {
-        appendMessage('user', message);
-        userInput.value = '';
+    async function sendMessage(message, isResumeAnalysis = false) {
+        if (!isResumeAnalysis) {
+            appendMessage('user', message);
+            userInput.value = '';
+        }
 
         try {
+            const body = { message, sessionId };
+            if (isResumeAnalysis) {
+                body.isResumeAnalysis = true;
+            }
+
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
 
             const data = await response.json();
             appendMessage('bot', data.response);
+
         } catch (error) {
             console.error('Error:', error);
             appendMessage('bot', 'Sorry, something went wrong. Please try again.');
@@ -41,23 +45,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('resume', file);
         
-        appendMessage('bot', 'Uploading your resume...');
+        appendMessage('bot', 'Uploading and analyzing your resume...');
 
         try {
             const response = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
             const data = await response.json();
-            appendMessage('bot', data.response);
+            
+            // Pass the extracted text to the main chat API for analysis
+            await sendMessage(data.extractedText, true);
+
         } catch (error) {
             console.error('Error:', error);
-            appendMessage('bot', 'Sorry, there was an issue uploading your resume.');
+            appendMessage('bot', 'Sorry, there was an issue uploading or analyzing your resume.');
         }
     }
 
@@ -76,5 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    appendMessage('bot', 'Hello! I am a chatbot to help you with the UK Global Talent Visa application. How can I help you today?');
+    // Start the conversation
+    sendMessage("start");
 });
