@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             
-            // Pass the extracted text to the main chat API for analysis
-            await sendMessage(data.extractedText, true);
+            const resumeMessage = `Here is the text from the resume: \n\n${data.extractedText}`;
+            await sendMessage(resumeMessage, true);
 
         } catch (error) {
             console.error('Error:', error);
@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Start the conversation
-    sendMessage("start");
+    // New function to initialize the chat
+    function initChat() {
+        appendMessage('bot', 'Hello! I will guide you through a pre-screening for the UK Global Talent Visa. How can I help you today?');
+    }
+
+    // Call the function to start the chat
+    initChat();
 });
