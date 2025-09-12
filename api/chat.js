@@ -5,7 +5,7 @@ import { OpenAIEmbeddings, ChatOpenAI } from '@langchain/openai';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
-import { getNotionPageContent } from './guide_content.js'; // Assuming this file exists
+import { getNotionPageContent } from './guide_content.js';
 
 const kv = createClient({
   url: process.env.KV_REST_API_URL,
@@ -13,14 +13,13 @@ const kv = createClient({
 });
 
 async function prepareGuideForRAG() {
-    // This is the correct way to import content from the guide file
     const notionText = await getNotionPageContent();
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 1000,
         chunkOverlap: 100
     });
     const docs = await splitter.createDocuments([notionText]);
-    const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENROUTER_API_KEY, });
+    const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENROUTER_API_KEY });
     const vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
     return vectorStore;
 }
