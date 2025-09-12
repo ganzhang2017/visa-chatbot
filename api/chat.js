@@ -5,12 +5,17 @@ import { OpenAIEmbeddings, ChatOpenAI } from '@langchain/openai';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
-import { getNotionPageContent } from './guide_content.js'; // Ensure 'guide_content.js' has a named export
+import { getNotionPageContent } from './guide_content.js';
 
-// Use the new environment variable for the URL to fix the Upstash error
+// Add these lines to see what values your code is receiving
+const redisUrl = process.env.UPSTASH_REDIS_URL;
+const redisToken = process.env.REDIS_TOKEN;
+console.log('Redis URL:', redisUrl);
+console.log('Redis Token:', redisToken);
+
 const kv = createClient({
-  url: process.env.UPSTASH_REDIS_URL,
-  token: process.env.REDIS_TOKEN,
+  url: redisUrl,
+  token: redisToken,
 });
 
 const stages = {
