@@ -8,8 +8,8 @@ import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables
 import { getNotionPageContent } from './guide_content.js';
 
 const kv = createClient({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+  url: process.env.REDIS_URL,
+  token: process.env.REDIS_TOKEN,
 });
 
 const stages = {
