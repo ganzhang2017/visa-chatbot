@@ -12,6 +12,21 @@ const kv = createClient({
   token: process.env.KV_REST_API_TOKEN,
 });
 
+const stages = {
+    START: 'start',
+    YEARS_EXPERIENCE: 'years_experience',
+    ROLE_SELECTION: 'role_selection',
+    ROLE_SPECIFIC: 'role_specific',
+    RESUME_UPLOAD: 'resume_upload',
+    ANALYSIS: 'analysis'
+};
+
+const stagePrompts = {
+    [stages.START]: 'Welcome! I will guide you through a pre-screening for the UK Global Talent Visa. How many years of experience do you have in digital technology?',
+    [stages.YEARS_EXPERIENCE]: 'What is your primary role? (e.g., Technical, Business, Product Manager)',
+    // Add more prompts here as you build the flow...
+};
+
 async function prepareGuideForRAG() {
     const notionText = await getNotionPageContent();
     const splitter = new RecursiveCharacterTextSplitter({
@@ -32,37 +47,67 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { message } = req.body;
-        const vectorStore = await vectorStorePromise;
-        const retriever = vectorStore.asRetriever();
+        const { message, sessionId, isResumeAnalysis } = req.body;
+        
+        let currentState = await kv.get(sessionId) || stages.START;
 
-        const model = new ChatOpenAI({
-            openAIApiKey: process.env.OPENROUTER_API_KEY,
-            modelName: "gpt-4o",
-            temperature: 0,
-        });
+        if (isResumeAnalysis) {
+            // Handle the resume analysis request directly
+            const vectorStore = await vectorStorePromise;
+            const retriever = vectorStore.asRetriever();
+            const model = new ChatOpenAI({
+                openAIApiKey: process.env.OPENROUTER_API_KEY,
+                modelName: "gpt-4o",
+                temperature: 0,
+            });
 
-        const promptTemplate = PromptTemplate.fromTemplate(
-            `You are a chatbot that helps with the UK Global Talent Visa application. Use the following context to answer the user's question. If the answer is not in the context, say "I can only answer questions about the UK Global Talent Visa based on the provided guide."
+            const promptTemplate = PromptTemplate.fromTemplate(
+                `You are an expert visa consultant. Your task is to analyze the provided resume against the context about the UK Global Talent Visa criteria. Provide a clear evaluation of the candidate's chances of qualifying and highlight any key gaps.
+                
+                Context: {context}
+                
+                Resume: {question}`
+            );
+
+            const chain = RunnableSequence.from([
+                {
+                    context: retriever,
+                    question: new RunnablePassthrough()
+                },
+                promptTemplate,
+                model,
+                new StringOutputParser()
+            ]);
+
+            const analysisResult = await chain.invoke(message);
             
-            Context: {context}
+            // Reset the state after analysis
+            await kv.set(sessionId, stages.START);
             
-            Question: {question}`
-        );
+            return res.status(200).json({ response: analysisResult });
+        }
 
-        const chain = RunnableSequence.from([
-            {
-                context: retriever,
-                question: new RunnablePassthrough()
-            },
-            promptTemplate,
-            model,
-            new StringOutputParser()
-        ]);
+        // Handle the conversational flow
+        let nextStage = '';
+        let responseMessage = '';
 
-        const result = await chain.invoke(message);
+        if (message === 'start') {
+            nextStage = stages.YEARS_EXPERIENCE;
+            responseMessage = stagePrompts[nextStage];
+        } else if (currentState === stages.YEARS_EXPERIENCE) {
+            // Logic for Years of Experience
+            nextStage = stages.ROLE_SELECTION;
+            responseMessage = stagePrompts[nextStage];
+        } else if (currentState === stages.ROLE_SELECTION) {
+            // Logic for Role Selection
+            nextStage = stages.ROLE_SPECIFIC;
+            responseMessage = 'Based on your role, please tell me about your contributions...';
+        } 
+        
+        // Save the next state
+        await kv.set(sessionId, nextStage);
 
-        return res.status(200).json({ response: result });
+        return res.status(200).json({ response: responseMessage });
     } catch (error) {
         console.error('API Error:', error);
         return res.status(500).json({ response: 'Sorry, something went wrong. Please try again.' });
