@@ -1,9 +1,7 @@
-export const GUIDE_TEXT = `
-Global Talent Visa guide excerpts (placeholder)
+// guide_content.js
+// Other code...
 
-- Recognition: awards, speaking, publications
-- Innovation: OSS, patents, product launches
-- Impact: revenue/users/metrics
-- Leadership & mentorship
-`;
-
+// Make sure you have the 'export' keyword
+export async function getNotionPageContent() {
+    // Your function's code here
+}
