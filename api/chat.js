@@ -13,10 +13,23 @@ const kv = createClient({
   token: process.env.REDIS_TOKEN,
 });
 
+// Utility function to parse the request body
+async function getRequestBody(req) {
+    if (req.json) {
+        return await req.json();
+    }
+    const chunks = [];
+    for await (const chunk of req) {
+        chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks).toString();
+    return JSON.parse(body);
+}
+
 // The chat endpoint handler
 export const handler = async (req, res) => {
     try {
-        const { messages, userId } = await req.json();
+        const { messages, userId } = await getRequestBody(req);
 
         if (!messages) {
             return res.status(400).json({ error: 'Missing messages in request' });
