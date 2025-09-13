@@ -1,11 +1,12 @@
 import { createClient } from "@vercel/kv";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
+import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RunnablePassthrough, RunnableSequence } from "@langchain/core/runnables";
 import { getNotionPageContent } from "./guide_content.js";
+import { OpenAI } from "openai"; // <-- New Import
 
 // Initialize the Vercel KV client
 const kv = createClient({
@@ -40,7 +41,12 @@ export const handler = async (req, res) => {
       return res.status(400).json({ error: "No current message found" });
     }
 
-    // Chat model configured with OpenRouter
+    // Configure the OpenAI client to use OpenRouter's API
+    const openaiClient = new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
+    });
+
     const model = new ChatOpenAI({
       modelName: "gpt-4",
       openAIApiKey: process.env.OPENROUTER_API_KEY,
@@ -58,15 +64,15 @@ export const handler = async (req, res) => {
 
     const docs = await splitter.createDocuments([notionContent]);
 
-    // Embeddings configured correctly for OpenRouter
-    const vectorStore = new MemoryVectorStore(
-      new OpenAIEmbeddings({
-        openAIApiKey: process.env.OPENROUTER_API_KEY,
-        baseURL: "https://openrouter.ai/api/v1",
-      })
-    );
+    // Manually create embeddings using the configured openai client
+    const embeddings = await openaiClient.embeddings.create({
+      model: "text-embedding-3-small", // A model supported by OpenRouter
+      input: docs.map(doc => doc.pageContent),
+    });
 
-    await vectorStore.addDocuments(docs);
+    const vectorStore = new MemoryVectorStore();
+    await vectorStore.addDocuments(docs, embeddings.data.map(e => e.embedding));
+
     const retriever = vectorStore.asRetriever();
 
     const standaloneQuestionTemplate = `Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is.
