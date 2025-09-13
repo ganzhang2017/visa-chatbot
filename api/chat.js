@@ -65,13 +65,16 @@ export const handler = async (req, res) => {
     const docs = await splitter.createDocuments([notionContent]);
 
     // Manually create embeddings using the configured openai client
-    const embeddings = await openaiClient.embeddings.create({
-      model: "text-embedding-3-small", // A model supported by OpenRouter
-      input: docs.map(doc => doc.pageContent),
+    const embeddingInput = docs.map(doc => doc.pageContent);
+    const embeddingResponse = await openaiClient.embeddings.create({
+      model: "text-embedding-3-small",
+      input: embeddingInput,
     });
 
+    // Extract embeddings and create a MemoryVectorStore
+    const embeddings = embeddingResponse.data.map(e => e.embedding);
     const vectorStore = new MemoryVectorStore();
-    await vectorStore.addDocuments(docs, embeddings.data.map(e => e.embedding));
+    await vectorStore.addVectors(embeddings, docs);
 
     const retriever = vectorStore.asRetriever();
 
