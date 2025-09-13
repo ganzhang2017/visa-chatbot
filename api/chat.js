@@ -6,6 +6,7 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
 import { getNotionPageContent } from './guide_content.js';
+import { OpenAI } from "openai"; // <-- New import
 
 // Initialize the Vercel KV client
 const kv = createClient({
@@ -40,10 +41,16 @@ export const handler = async (req, res) => {
             return res.status(400).json({ error: 'No current message found' });
         }
 
+        // Configure the shared OpenAI client for both models
+        const openaiClient = new OpenAI({
+            apiKey: process.env.OPENROUTER_API_KEY,
+            baseURL: "https://openrouter.ai/api/v1",
+        });
+
+        // Use the configured client for both the chat model and embeddings
         const model = new ChatOpenAI({
             modelName: "gpt-4",
-            openAIApiKey: process.env.OPENROUTER_API_KEY, // Corrected variable name
-            baseURL: "https://openrouter.ai/api/v1", // OpenRouter API endpoint
+            client: openaiClient, // <-- Pass the client here
             temperature: 0.5
         });
 
@@ -57,10 +64,12 @@ export const handler = async (req, res) => {
 
         const docs = await splitter.createDocuments([notionContent]);
         
-        const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings({ 
-            openAIApiKey: process.env.OPENROUTER_API_KEY, // Corrected variable name
-            baseURL: "https://openrouter.ai/api/v1" 
-        }));
+        // Pass the configured client to the embeddings model
+        const embeddings = new OpenAIEmbeddings({
+            client: openaiClient, // <-- Pass the client here
+        });
+
+        const vectorStore = new MemoryVectorStore(embeddings);
         await vectorStore.addDocuments(docs);
         const retriever = vectorStore.asRetriever();
 
