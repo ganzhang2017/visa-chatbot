@@ -7,111 +7,98 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
 import { getNotionPageContent } from './guide_content.js';
 
-// The createClient function now correctly uses the environment variables
-// that were created on Vercel to fix the HTTPS URL error.
+// Initialize the Vercel KV client
 const kv = createClient({
-  url: process.env.UPSTASH_REDIS_URL,
+  url: process.env.UPSTASH_REDIS_URL,
   token: process.env.REDIS_TOKEN,
 });
 
-const stages = {
-    START: 'start',
-    YEARS_EXPERIENCE: 'years_experience',
-    ROLE_SELECTION: 'role_selection',
-    ROLE_SPECIFIC: 'role_specific',
-    RESUME_UPLOAD: 'resume_upload',
-    ANALYSIS: 'analysis'
+// The chat endpoint handler
+export const handler = async (req, res) => {
+    try {
+        const { messages, userId } = await req.json();
+
+        if (!messages) {
+            return res.status(400).json({ error: 'Missing messages in request' });
+        }
+
+        const currentMessage = messages[messages.length - 1];
+        if (!currentMessage) {
+            return res.status(400).json({ error: 'No current message found' });
+        }
+
+        const model = new ChatOpenAI({
+            modelName: "gpt-4",
+            openAIApiKey: process.env.OPENAI_API_KEY,
+            baseURL: "https://openrouter.ai/api/v1", // OpenRouter API endpoint
+            temperature: 0.5
+        });
+
+        // Use the PDF content from guide_content.js
+        const notionContent = await getNotionPageContent();
+        
+        const splitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 500,
+            chunkOverlap: 50,
+        });
+
+        const docs = await splitter.createDocuments([notionContent]);
+        
+        const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
+        await vectorStore.addDocuments(docs);
+        const retriever = vectorStore.asRetriever();
+
+        const standaloneQuestionTemplate = `Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is.
+
+        Chat history:
+        {chat_history}
+
+        Latest user question: {question}`;
+        
+        const standaloneQuestionPrompt = PromptTemplate.fromTemplate(standaloneQuestionTemplate);
+
+        const answerTemplate = `You are a helpful and knowledgeable visa chatbot. Your task is to answer user questions about the UK Global Talent Visa. Your answers should be based strictly on the provided context. If the user asks a question that is not covered in the context, politely tell them that you don't have information on that topic.
+
+        Context: {context}
+
+        Question: {question}`;
+        
+        const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
+
+        const chatHistory = messages.slice(0, -1).map(msg => `${msg.role}: ${msg.content}`).join('\n');
+        
+        const standaloneQuestionChain = standaloneQuestionPrompt.pipe(model).pipe(new StringOutputParser());
+
+        const retrieverChain = RunnableSequence.from([
+            prevResult => prevResult.standalone_question,
+            retriever,
+            (documents) => documents.map(doc => doc.pageContent).join('\n\n')
+        ]);
+
+        const answerChain = answerPrompt.pipe(model).pipe(new StringOutputParser());
+
+        const chain = RunnableSequence.from([
+            {
+                standalone_question: standaloneQuestionChain,
+                original_input: new RunnablePassthrough()
+            },
+            {
+                context: retrieverChain,
+                question: ({ original_input }) => original_input.question,
+                chat_history: ({ original_input }) => original_input.chat_history
+            },
+            answerChain
+        ]);
+
+        const response = await chain.invoke({ question: currentMessage.content, chat_history: chatHistory });
+
+        await kv.set(userId, JSON.stringify(messages));
+        return res.status(200).json({ response });
+
+    } catch (error) {
+        console.error('API Error:', error);
+        return res.status(500).json({ error: error.message });
+    }
 };
 
-const stagePrompts = {
-    [stages.START]: 'Welcome! I will guide you through a pre-screening for the UK Global Talent Visa. How many years of experience do you have in digital technology?',
-    [stages.YEARS_EXPERIENCE]: 'What is your primary role? (e.g., Technical, Business, Product Manager)',
-    // Add more prompts here as you build the flow...
-};
-
-async function prepareGuideForRAG() {
-    const notionText = await getNotionPageContent();
-    const splitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
-        chunkOverlap: 100
-    });
-    const docs = await splitter.createDocuments([notionText]);
-    const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENROUTER_API_KEY });
-    const vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
-    return vectorStore;
-}
-
-const vectorStorePromise = prepareGuideForRAG();
-
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
-
-    try {
-        const { message, sessionId, isResumeAnalysis } = req.body;
-        
-        let currentState = await kv.get(sessionId) || stages.START;
-
-        if (isResumeAnalysis) {
-            // Handle the resume analysis request directly
-            const vectorStore = await vectorStorePromise;
-            const retriever = vectorStore.asRetriever();
-            const model = new ChatOpenAI({
-                openAIApiKey: process.env.OPENROUTER_API_KEY,
-                modelName: "gpt-4o",
-                temperature: 0,
-            });
-
-            const promptTemplate = PromptTemplate.fromTemplate(
-                `You are an expert visa consultant. Your task is to analyze the provided resume against the context about the UK Global Talent Visa criteria. Provide a clear evaluation of the candidate's chances of qualifying and highlight any key gaps.
-                
-                Context: {context}
-                
-                Resume: {question}`
-            );
-
-            const chain = RunnableSequence.from([
-                {
-                    context: retriever,
-                    question: new RunnablePassthrough()
-                },
-                promptTemplate,
-                model,
-                new StringOutputParser()
-            ]);
-
-            const analysisResult = await chain.invoke(message);
-            
-            // Reset the state after analysis
-            await kv.set(sessionId, stages.START);
-            
-            return res.status(200).json({ response: analysisResult });
-        }
-
-        // Handle the conversational flow
-        let nextStage = '';
-        let responseMessage = '';
-
-        if (message === 'start') {
-            nextStage = stages.YEARS_EXPERIENCE;
-            responseMessage = stagePrompts[nextStage];
-        } else if (currentState === stages.YEARS_EXPERIENCE) {
-            // Logic for Years of Experience
-            nextStage = stages.ROLE_SELECTION;
-            responseMessage = stagePrompts[nextStage];
-        } else if (currentState === stages.ROLE_SELECTION) {
-            // Logic for Role Selection
-            nextStage = stages.ROLE_SPECIFIC;
-            responseMessage = 'Based on your role, please tell me about your contributions...';
-        } 
-        
-        // Save the next state
-        await kv.set(sessionId, nextStage);
-
-        return res.status(200).json({ response: responseMessage });
-    } catch (error) {
-        console.error('API Error:', error);
-        return res.status(500).json({ response: 'Sorry, something went wrong. Please try again.' });
-    }
-}
+export default handler;
