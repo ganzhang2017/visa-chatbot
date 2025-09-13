@@ -1,13 +1,5 @@
 import { createClient } from "@vercel/kv";
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
-import { ChatOpenAI } from '@langchain/openai';
-import { PromptTemplate } from '@langchain/core/prompts';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
 import { getNotionPageContent } from './guide_content.js';
-import { Embeddings } from '@langchain/core/embeddings';
-import OpenAI from 'openai';
 
 // Initialize the Vercel KV client
 const kv = createClient({
@@ -15,72 +7,91 @@ const kv = createClient({
   token: process.env.REDIS_TOKEN,
 });
 
-// Custom OpenRouter Embeddings class that properly handles baseURL
-class OpenRouterEmbeddings extends Embeddings {
-  constructor(fields = {}) {
-    super(fields);
-    this.modelName = fields.modelName || "text-embedding-ada-002";
+// Simple text search function
+function findRelevantSections(content, query, maxSections = 5) {
+    console.log('🔍 Searching for relevant content...');
     
-    console.log('🔧 Initializing OpenRouterEmbeddings with:', {
-      modelName: this.modelName,
-      baseURL: fields.baseURL,
-      hasApiKey: !!fields.openAIApiKey
+    const paragraphs = content.split('\n\n').filter(p => p.trim().length > 100);
+    const queryWords = query.toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 2);
+    
+    const scoredParagraphs = paragraphs.map(paragraph => {
+        const paraLower = paragraph.toLowerCase();
+        let score = 0;
+        
+        queryWords.forEach(word => {
+            const matches = (paraLower.match(new RegExp(word, 'g')) || []).length;
+            score += matches;
+        });
+        
+        return { paragraph, score };
     });
     
-    this.client = new OpenAI({
-      apiKey: fields.openAIApiKey || process.env.OPENROUTER_API_KEY,
-      baseURL: fields.baseURL || "https://openrouter.ai/api/v1",
-      defaultHeaders: {
-        "HTTP-Referer": process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
-        "X-Title": "Visa Chatbot"
-      }
-    });
-  }
+    const relevantSections = scoredParagraphs
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxSections)
+        .map(item => item.paragraph);
+    
+    return relevantSections.join('\n\n---\n\n');
+}
 
-  async embedDocuments(texts) {
+// Test OpenRouter API directly
+async function testOpenRouterAPI(message) {
+    console.log('🧪 Testing OpenRouter API directly...');
+    
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    console.log('🔑 API Key exists:', !!apiKey);
+    console.log('🔑 API Key prefix:', apiKey ? apiKey.substring(0, 8) + '...' : 'None');
+    
     try {
-      console.log(`🔍 Creating embeddings for ${texts.length} documents`);
-      
-      const response = await this.client.embeddings.create({
-        model: this.modelName,
-        input: texts,
-      });
-      
-      console.log('✅ Embeddings API response structure:', {
-        hasData: !!response.data,
-        hasDirectArray: Array.isArray(response),
-        responseKeys: Object.keys(response),
-        dataType: typeof response.data
-      });
-      
-      // Handle different response structures
-      let embeddings;
-      if (response.data && Array.isArray(response.data)) {
-        embeddings = response.data.map(item => item.embedding);
-      } else if (Array.isArray(response)) {
-        embeddings = response.map(item => item.embedding);
-      } else {
-        console.error('❌ Unexpected response structure:', response);
-        throw new Error('Unexpected embeddings response structure');
-      }
-      
-      console.log('✅ Successfully extracted embeddings:', embeddings.length);
-      return embeddings;
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
+                'X-Title': 'Visa Chatbot'
+            },
+            body: JSON.stringify({
+                model: 'openai/gpt-3.5-turbo',  // Using cheaper model for testing
+                messages: [
+                    {
+                        role: 'user',
+                        content: message
+                    }
+                ],
+                max_tokens: 150
+            })
+        });
+        
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        const responseText = await response.text();
+        console.log('📡 Raw response length:', responseText.length);
+        console.log('📡 Response starts with:', responseText.substring(0, 200));
+        
+        if (response.ok) {
+            try {
+                const jsonData = JSON.parse(responseText);
+                console.log('✅ Successfully parsed JSON response');
+                return jsonData.choices[0].message.content;
+            } catch (parseError) {
+                console.error('❌ Failed to parse JSON:', parseError.message);
+                return `Error parsing response: ${parseError.message}`;
+            }
+        } else {
+            console.error('❌ API call failed with status:', response.status);
+            return `API Error (${response.status}): ${responseText.substring(0, 500)}`;
+        }
+        
     } catch (error) {
-      console.error('❌ Embedding error:', {
-        message: error.message,
-        status: error.status,
-        type: error.type,
-        code: error.code
-      });
-      throw error;
+        console.error('❌ Fetch error:', error);
+        return `Network Error: ${error.message}`;
     }
-  }
-
-  async embedQuery(text) {
-    const embeddings = await this.embedDocuments([text]);
-    return embeddings[0];
-  }
 }
 
 // Utility function to parse the request body
@@ -98,17 +109,9 @@ async function getRequestBody(req) {
 
 // The chat endpoint handler
 export const handler = async (req, res) => {
-    console.log('🚀 Handler started');
+    console.log('🚀 Handler started - Debug version');
     
     try {
-        // Log environment variables (safely)
-        console.log('🔐 Environment check:', {
-            hasOpenRouterKey: !!process.env.OPENROUTER_API_KEY,
-            hasRedisUrl: !!process.env.UPSTASH_REDIS_URL,
-            hasRedisToken: !!process.env.REDIS_TOKEN,
-            vercelUrl: process.env.VERCEL_URL
-        });
-
         const { messages, userId } = await getRequestBody(req);
 
         if (!messages) {
@@ -122,115 +125,36 @@ export const handler = async (req, res) => {
 
         console.log('💬 Processing message:', currentMessage.content);
 
-        // Initialize ChatOpenAI with OpenRouter
-        console.log('🤖 Initializing ChatOpenAI...');
-        const model = new ChatOpenAI({
-            modelName: "openai/gpt-4",
-            openAIApiKey: process.env.OPENROUTER_API_KEY,
-            baseURL: "https://openrouter.ai/api/v1",
-            temperature: 0.5,
-            defaultHeaders: {
-                "HTTP-Referer": process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
-                "X-Title": "Visa Chatbot"
-            }
-        });
-
-        // Use the PDF content from guide_content.js
+        // Get content for context
         console.log('📄 Getting content...');
         const notionContent = await getNotionPageContent();
-        console.log('📄 Content length:', notionContent.length);
-        
-        console.log('✂️ Splitting content...');
-        const splitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 500,
-            chunkOverlap: 50,
-        });
+        const relevantContext = findRelevantSections(notionContent, currentMessage.content);
 
-        const docs = await splitter.createDocuments([notionContent]);
-        console.log('📝 Created documents:', docs.length);
-        
-        // Use our custom OpenRouter embeddings class
-        console.log('🔧 Creating embeddings...');
-        const embeddings = new OpenRouterEmbeddings({
-            openAIApiKey: process.env.OPENROUTER_API_KEY,
-            baseURL: "https://openrouter.ai/api/v1",
-            modelName: "text-embedding-ada-002"
-        });
+        // Create a simple prompt
+        const prompt = `You are a helpful visa chatbot. Based on the context below, answer this question about the UK Global Talent Visa:
 
-        console.log('🗃️ Creating vector store...');
-        const vectorStore = new MemoryVectorStore(embeddings);
-        
-        console.log('📚 Adding documents to vector store...');
-        await vectorStore.addDocuments(docs);
-        
-        console.log('🔍 Creating retriever...');
-        const retriever = vectorStore.asRetriever();
+Context: ${relevantContext.substring(0, 2000)}
 
-        const standaloneQuestionTemplate = `Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is.
+Question: ${currentMessage.content}
 
-        Chat history:
-        {chat_history}
+Answer briefly:`;
 
-        Latest user question: {question}`;
-        
-        const standaloneQuestionPrompt = PromptTemplate.fromTemplate(standaloneQuestionTemplate);
+        // Test OpenRouter API directly
+        const response = await testOpenRouterAPI(prompt);
 
-        const answerTemplate = `You are a helpful and knowledgeable visa chatbot. Your task is to answer user questions about the UK Global Talent Visa. Your answers should be based strictly on the provided context. If the user asks a question that is not covered in the context, politely tell them that you don't have information on that topic.
-
-        Context: {context}
-
-        Question: {question}`;
-        
-        const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
-
-        const chatHistory = messages.slice(0, -1).map(msg => `${msg.role}: ${msg.content}`).join('\n');
-        
-        console.log('🔗 Building chains...');
-        const standaloneQuestionChain = standaloneQuestionPrompt.pipe(model).pipe(new StringOutputParser());
-
-        const retrieverChain = RunnableSequence.from([
-            prevResult => prevResult.standalone_question,
-            retriever,
-            (documents) => documents.map(doc => doc.pageContent).join('\n\n')
-        ]);
-
-        const answerChain = answerPrompt.pipe(model).pipe(new StringOutputParser());
-
-        const chain = RunnableSequence.from([
-            {
-                standalone_question: standaloneQuestionChain,
-                original_input: new RunnablePassthrough()
-            },
-            {
-                context: retrieverChain,
-                question: ({ original_input }) => original_input.question,
-                chat_history: ({ original_input }) => original_input.chat_history
-            },
-            answerChain
-        ]);
-
-        console.log('🚀 Invoking chain...');
-        const response = await chain.invoke({ 
-            question: currentMessage.content, 
-            chat_history: chatHistory 
-        });
-
-        console.log('✅ Got response, saving to KV...');
+        // Store conversation history
         if (userId) {
-            await kv.set(userId, JSON.stringify(messages));
+            await kv.set(userId, JSON.stringify([...messages, { role: 'assistant', content: response }]));
         }
         
-        console.log('🎉 Success! Returning response');
+        console.log('🎉 Returning response');
         return res.status(200).json({ response });
 
     } catch (error) {
-        console.error('❌ API Error:', {
+        console.error('❌ Handler Error:', {
             message: error.message,
             name: error.name,
-            stack: error.stack,
-            status: error.status,
-            type: error.type,
-            code: error.code
+            stack: error.stack
         });
         
         return res.status(500).json({ 
@@ -241,4 +165,3 @@ export const handler = async (req, res) => {
 };
 
 export default handler;
-
