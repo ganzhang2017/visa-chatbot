@@ -6,6 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionId = sessionStorage.getItem('sessionId') || `session-${Date.now()}`;
     sessionStorage.setItem('sessionId', sessionId);
 
+    // Get message history from session storage
+    const messageHistory = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+    
+    // Display initial messages
+    messageHistory.forEach(msg => {
+        appendMessage(msg.role === 'user' ? 'user' : 'bot', msg.content);
+    });
+
+    if (messageHistory.length === 0) {
+        initChat();
+    }
+
     function appendMessage(sender, message) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', `${sender}-message`);
@@ -17,15 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
     async function sendMessage(message, isResumeAnalysis = false) {
         if (!isResumeAnalysis) {
             appendMessage('user', message);
+            // Add user message to history
+            messageHistory.push({ role: 'user', content: message });
             userInput.value = '';
         }
 
         try {
-            const body = { message, sessionId };
-            if (isResumeAnalysis) {
-                body.isResumeAnalysis = true;
-            }
-
+            const body = { 
+                messages: messageHistory,
+                userId: sessionId 
+            };
+            
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -33,6 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await response.json();
+            
+            // Add bot message to history
+            messageHistory.push({ role: 'bot', content: data.response });
+            sessionStorage.setItem('chatHistory', JSON.stringify(messageHistory));
+            
             appendMessage('bot', data.response);
 
         } catch (error) {
@@ -55,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             const resumeMessage = `Here is the text from the resume: \n\n${data.extractedText}`;
+            // Add bot's analysis message to history before sending to the bot
+            messageHistory.push({ role: 'bot', content: 'Uploading and analyzing your resume...' });
+            messageHistory.push({ role: 'bot', content: resumeMessage });
+            sessionStorage.setItem('chatHistory', JSON.stringify(messageHistory));
+
             await sendMessage(resumeMessage, true);
 
         } catch (error) {
@@ -78,11 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // New function to initialize the chat
     function initChat() {
         appendMessage('bot', 'Hello! I will guide you through a pre-screening for the UK Global Talent Visa. How can I help you today?');
     }
-
-    // Call the function to start the chat
-    initChat();
 });
