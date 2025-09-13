@@ -11,7 +11,6 @@ import { getNotionPageContent } from './guide_content.js';
 // that were created on Vercel to fix the HTTPS URL error.
 const kv = createClient({
   url: process.env.UPSTASH_REDIS_URL,
-  token: process.env.REDIS_TOKEN,
 });
 
 const stages = {
