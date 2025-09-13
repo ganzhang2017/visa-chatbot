@@ -54,7 +54,7 @@ async function callOpenRouter(prompt) {
             'X-Title': 'Visa Chatbot'
         },
         body: JSON.stringify({
-            model: 'openai/gpt-oss-120b:free',
+            model: 'deepseek/deepseek-r1-distill-llama-70b:free',
             messages: [
                 {
                     role: 'system',
