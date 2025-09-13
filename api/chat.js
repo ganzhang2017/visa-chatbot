@@ -57,7 +57,7 @@ export const handler = async (req, res) => {
 
         const docs = await splitter.createDocuments([notionContent]);
         
-        const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
+        const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY, baseURL: "https://openrouter.ai/api/v1" }));
         await vectorStore.addDocuments(docs);
         const retriever = vectorStore.asRetriever();
 
