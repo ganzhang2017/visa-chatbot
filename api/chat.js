@@ -46,8 +46,26 @@ class OpenRouterEmbeddings extends Embeddings {
         input: texts,
       });
       
-      console.log('✅ Embeddings created successfully');
-      return response.data.map(item => item.embedding);
+      console.log('✅ Embeddings API response structure:', {
+        hasData: !!response.data,
+        hasDirectArray: Array.isArray(response),
+        responseKeys: Object.keys(response),
+        dataType: typeof response.data
+      });
+      
+      // Handle different response structures
+      let embeddings;
+      if (response.data && Array.isArray(response.data)) {
+        embeddings = response.data.map(item => item.embedding);
+      } else if (Array.isArray(response)) {
+        embeddings = response.map(item => item.embedding);
+      } else {
+        console.error('❌ Unexpected response structure:', response);
+        throw new Error('Unexpected embeddings response structure');
+      }
+      
+      console.log('✅ Successfully extracted embeddings:', embeddings.length);
+      return embeddings;
     } catch (error) {
       console.error('❌ Embedding error:', {
         message: error.message,
