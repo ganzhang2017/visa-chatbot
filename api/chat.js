@@ -1,150 +1,211 @@
 import { createClient } from "@vercel/kv";
 import { getNotionPageContent } from './guide_content.js';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { OpenAIEmbeddings, ChatOpenAI } from '@langchain/openai';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { StringOutputParser } from '@langchain/core/output_parsers';
+import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
 
-// Initialize the Vercel KV client
+// 1. Initialize the Vercel KV client
 const kv = createClient({
-  url: process.env.UPSTASH_REDIS_URL,
-  token: process.env.REDIS_TOKEN,
+  url: process.env.KV_URL,
+  token: process.env.KV_TOKEN,
 });
 
-// Simple text search function
-function findRelevantSections(content, query, maxSections = 5) {
-    const paragraphs = content.split('\n\n').filter(p => p.trim().length > 100);
-    const queryWords = query.toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .split(/\s+/)
-        .filter(word => word.length > 2)
-        .filter(word => !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'may', 'new', 'now', 'old', 'see', 'two', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use'].includes(word));
-    
-    const scoredParagraphs = paragraphs.map(paragraph => {
-        const paraLower = paragraph.toLowerCase();
-        let score = 0;
-        
-        queryWords.forEach(word => {
-            const matches = (paraLower.match(new RegExp(word, 'g')) || []).length;
-            score += matches * (word.length > 4 ? 2 : 1);
-        });
-        
-        // Bonus for exact phrase matches
-        const queryPhrase = query.toLowerCase();
-        if (paraLower.includes(queryPhrase)) {
-            score += 10;
-        }
-        
-        return { paragraph, score };
-    });
-    
-    const relevantSections = scoredParagraphs
-        .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, maxSections)
-        .map(item => item.paragraph);
-    
-    return relevantSections.join('\n\n---\n\n');
+// 2. Define Workflow Steps
+const WORKFLOW_STEPS = {
+    WELCOME: 'welcome',
+    EXPERIENCE: 'experience',
+    ROLE_SELECTION: 'role_selection',
+    TECHNICAL_FOLLOWUP: 'technical_followup',
+    BUSINESS_FOLLOWUP: 'business_followup',
+    ANALYSIS: 'analysis',
+    COMPLETE: 'complete'
+};
+
+// 3. Workflow State Management
+async function getUserWorkflowState(userId) {
+    if (!userId) return { step: WORKFLOW_STEPS.WELCOME, data: {} };
+    try {
+        const stored = await kv.get(`workflow_${userId}`);
+        return stored || { step: WORKFLOW_STEPS.WELCOME, data: {} };
+    } catch (error) {
+        console.error('Error getting workflow state:', error);
+        return { step: WORKFLOW_STEPS.WELCOME, data: {} };
+    }
 }
 
-// Call OpenRouter API
-async function callOpenRouter(prompt) {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
-            'X-Title': 'Visa Chatbot'
+async function saveUserWorkflowState(userId, state) {
+    if (!userId) return;
+    try {
+        await kv.set(`workflow_${userId}`, state);
+    } catch (error) {
+        console.error('Error saving workflow state:', error);
+    }
+}
+
+// 4. Generate RAG-Based Analysis
+async function generateAnalysis(userData, guideContent) {
+    const model = new ChatOpenAI({
+        modelName: "gpt-4-turbo-preview", // Use a powerful model for analysis
+        openAIApiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: "https://openrouter.ai/api/v1",
+        temperature: 0.1
+    });
+
+    const embeddings = new OpenAIEmbeddings({
+        modelName: "text-embedding-3-small",
+        openAIApiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: "https://openrouter.ai/api/v1"
+    });
+
+    // Split the guide content into chunks
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 100,
+    });
+    const docs = await splitter.createDocuments([guideContent]);
+    const vectorStore = new MemoryVectorStore(embeddings);
+    await vectorStore.addDocuments(docs);
+    const retriever = vectorStore.asRetriever();
+
+    // Create a comprehensive RAG query based on all collected data
+    const comprehensiveQuery = `User's Profile:\n- Experience: ${userData.experience}\n- Role: ${userData.role}\n- Specific contributions: ${userData.followUp}\n\nBased on this profile, provide a detailed assessment of the user's eligibility for the UK Global Talent Visa. Use the provided Tech Nation guide context to explain which criteria they likely meet and which areas they need to strengthen. Provide specific quotes or references to the document where possible. Do not invent information. If the provided context doesn't cover a point, state that clearly.`;
+
+    const ragTemplate = `You are a helpful and knowledgeable visa chatbot. Your task is to provide an in-depth analysis of a user's eligibility for the UK Global Talent Visa based on their profile and the provided official guidance.
+
+    User's Profile:
+    Experience: {experience}
+    Role: {role}
+    Specific contributions: {followUp}
+
+    Official UK Global Talent Visa Guidance:
+    {context}
+
+    Your analysis must:
+    1. Assess the user's profile against the "Exceptional Talent" and "Exceptional Promise" paths.
+    2. Based on their experience, identify at least two of the four required criteria they could meet.
+    3. Use the provided guidance to explain what evidence the user should provide to demonstrate each criterion.
+    4. Highlight any gaps or areas where the user needs more evidence.
+    5. Be professional, clear, and easy to understand.`;
+
+    const ragPrompt = PromptTemplate.fromTemplate(ragTemplate);
+
+    const ragChain = RunnableSequence.from([
+        {
+            context: retriever,
+            experience: () => userData.experience,
+            role: () => userData.role,
+            followUp: () => userData.followUp,
         },
-        body: JSON.stringify({
-            model: 'deepseek/deepseek-r1-distill-llama-70b:free',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are a helpful and knowledgeable visa chatbot specializing in the UK Global Talent Visa. Answer questions based strictly on the provided context. If information is not in the context, politely say you don\'t have that specific information.'
-                },
-                {
-                    role: 'user',
-                    content: prompt
-                }
-            ],
-            max_tokens: 500,
-            temperature: 0.7
-        })
+        ragPrompt,
+        model,
+        new StringOutputParser()
+    ]);
+
+    const relevantContext = await retriever.invoke(comprehensiveQuery);
+    const contextString = relevantContext.map(doc => doc.pageContent).join("\n\n");
+    
+    return await ragChain.invoke({
+        context: contextString,
+        experience: userData.experience,
+        role: userData.role,
+        followUp: userData.followUp
     });
-    
-    if (!response.ok) {
-        throw new Error(`OpenRouter API error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.choices[0].message.content;
 }
 
-// Utility function to parse the request body
-async function getRequestBody(req) {
-    if (req.json) {
-        return await req.json();
+// 5. Workflow Response Logic
+function generateWorkflowResponse(step, message, data) {
+    let nextStep = step;
+    let responseMessage = '';
+    let updatedData = { ...data };
+
+    switch (step) {
+        case WORKFLOW_STEPS.WELCOME:
+            nextStep = WORKFLOW_STEPS.EXPERIENCE;
+            responseMessage = "Hello! I can help you assess your eligibility for the UK Global Talent Visa in digital technology. First, how many years of experience do you have in the digital technology sector?";
+            break;
+        case WORKFLOW_STEPS.EXPERIENCE:
+            // Assuming the message is a number
+            const years = parseInt(message.trim(), 10);
+            if (!isNaN(years) && years > 0) {
+                updatedData.experience = years;
+                nextStep = WORKFLOW_STEPS.ROLE_SELECTION;
+                responseMessage = `Great. What is your primary role? Please specify whether it's a **Technical** role (e.g., Engineer, Developer, Data Scientist) or a **Business** role (e.g., Founder, Product Manager, C-level executive)?`;
+            } else {
+                responseMessage = "Please enter a valid number for your years of experience.";
+                nextStep = WORKFLOW_STEPS.EXPERIENCE;
+            }
+            break;
+        case WORKFLOW_STEPS.ROLE_SELECTION:
+            const roleInput = message.toLowerCase().trim();
+            if (roleInput.includes('technical')) {
+                updatedData.role = 'Technical';
+                nextStep = WORKFLOW_STEPS.TECHNICAL_FOLLOWUP;
+                responseMessage = "Thanks. Could you describe your **technical contributions**? For example, have you contributed to open-source projects, received any recognition within your field (awards, conference talks), or have any publications?";
+            } else if (roleInput.includes('business')) {
+                updatedData.role = 'Business';
+                nextStep = WORKFLOW_STEPS.BUSINESS_FOLLOWUP;
+                responseMessage = "Thank you. Could you describe your **business impact**? For example, what commercial outcomes (revenue growth, user metrics) have you driven, or have you done any public speaking or voluntary mentorship?";
+            } else {
+                responseMessage = "I didn't understand that. Please specify 'Technical' or 'Business'.";
+                nextStep = WORKFLOW_STEPS.ROLE_SELECTION;
+            }
+            break;
+        case WORKFLOW_STEPS.TECHNICAL_FOLLOWUP:
+        case WORKFLOW_STEPS.BUSINESS_FOLLOWUP:
+            updatedData.followUp = message;
+            nextStep = WORKFLOW_STEPS.ANALYSIS;
+            responseMessage = "Thank you. I have all the information I need. Please wait while I analyze your profile against the UK Global Talent Visa criteria.";
+            break;
+        default:
+            nextStep = WORKFLOW_STEPS.WELCOME;
+            responseMessage = "I'm sorry, an error occurred. Please type 'start' to begin the assessment.";
+            break;
     }
-    const chunks = [];
-    for await (const chunk of req) {
-        chunks.push(chunk);
-    }
-    const body = Buffer.concat(chunks).toString();
-    return JSON.parse(body);
+
+    return { message: responseMessage, nextStep, data: updatedData };
 }
 
-// The chat endpoint handler
+// 6. Main Handler Function
 export const handler = async (req, res) => {
     try {
-        const { messages, userId } = await getRequestBody(req);
-
-        if (!messages) {
-            return res.status(400).json({ error: 'Missing messages in request' });
+        const { messages, userId } = req.body;
+        if (!messages || !userId) {
+            return res.status(400).json({ error: 'Missing messages or userId' });
         }
-
         const currentMessage = messages[messages.length - 1];
-        if (!currentMessage) {
-            return res.status(400).json({ error: 'No current message found' });
+
+        // Retrieve the current workflow state
+        let { step, data } = await getUserWorkflowState(userId);
+
+        // Reset the workflow if the user types 'start'
+        if (currentMessage.content.toLowerCase().trim() === 'start') {
+            step = WORKFLOW_STEPS.WELCOME;
+            data = {};
         }
 
-        // Get content and find relevant sections
-        const notionContent = await getNotionPageContent();
-        const relevantContext = findRelevantSections(notionContent, currentMessage.content);
+        let botResponse;
 
-        // Format chat history (keep last 4 exchanges)
-        const chatHistory = messages.slice(-8)
-            .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-            .join('\n');
-
-        // Create comprehensive prompt
-        const prompt = `Previous conversation:
-${chatHistory}
-
-Relevant context from UK Global Talent Visa guide:
-${relevantContext.substring(0, 3000)}
-
-Current question: ${currentMessage.content}
-
-Please provide a helpful answer based on the context above. If the question cannot be answered with the provided context, politely explain that you don't have that specific information in the visa guide.`;
-
-        // Get response from OpenRouter
-        const response = await callOpenRouter(prompt);
-
-        // Try to store conversation history (non-blocking)
-        if (userId) {
-            try {
-                const updatedMessages = [...messages, { role: 'assistant', content: response }];
-                await kv.set(userId, JSON.stringify(updatedMessages));
-            } catch (kvError) {
-                console.error('KV Store warning:', kvError.message);
-                // Continue without saving
-            }
+        // Perform RAG analysis if the workflow is at the final step
+        if (step === WORKFLOW_STEPS.ANALYSIS) {
+            const guideContent = await getNotionPageContent();
+            botResponse = await generateAnalysis(data, guideContent);
+            // After analysis, set the state to complete or welcome to prevent re-running
+            await saveUserWorkflowState(userId, { step: WORKFLOW_STEPS.COMPLETE, data: {} });
+        } else {
+            // Otherwise, move through the guided workflow
+            const { message, nextStep, data: updatedData } = generateWorkflowResponse(step, currentMessage.content, data);
+            await saveUserWorkflowState(userId, { step: nextStep, data: updatedData });
+            botResponse = message;
         }
-        
-        return res.status(200).json({ response });
 
+        return res.status(200).json({ response: botResponse });
     } catch (error) {
         console.error('API Error:', error.message);
-        return res.status(500).json({ 
-            error: 'I apologize, but I encountered an error processing your request. Please try again.',
+        return res.status(500).json({
+            error: 'I apologize, but I encountered an error. Please type "start" to begin the assessment again.',
             details: error.message
         });
     }
