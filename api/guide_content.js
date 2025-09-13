@@ -1,31 +1,24 @@
-// guide_content.js
+// api/guide_content.js
 
-import * as cheerio from 'cheerio';
-
-const NOTION_PAGE_URL = "https://technation-globaltalentvisa-guide.notion.site/";
+import fs from 'fs';
+import path from 'path';
+import pdf from 'pdf-parse/lib/pdf-parse.js';
 
 export async function getNotionPageContent() {
     try {
-        const response = await fetch(NOTION_PAGE_URL);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch Notion page: ${response.statusText}`);
-        }
-        const html = await response.text();
-        
-        const $ = cheerio.load(html);
-        
-        // This selector targets the main content block of the Notion page
-        const content = $('[data-block-id]').text();
+        const filePath = path.join(process.cwd(), 'assets', 'guide.pdf');
+        const dataBuffer = fs.readFileSync(filePath);
 
-        if (!content) {
-            throw new Error("Could not find any text content on the Notion page.");
+        const data = await pdf(dataBuffer);
+
+        if (!data.text) {
+            throw new Error("Could not extract text from the PDF file.");
         }
-        
-        console.log("Successfully scraped Notion page.");
-        return content;
+
+        console.log("Successfully loaded content from PDF.");
+        return data.text;
     } catch (error) {
-        console.error('Scraping Error:', error);
-        // Returning an empty string prevents the TypeError crash in chat.js
-        return ""; 
+        console.error('PDF Parsing Error:', error);
+        return "";
     }
 }
