@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@langchain/community": "^0.3.55",
     "@langchain/openai": "^0.6.11",
     "@vercel/kv": "^3.0.0",
     "body-parser": "^2.2.0",
