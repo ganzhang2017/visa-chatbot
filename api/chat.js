@@ -40,11 +40,11 @@ export const handler = async (req, res) => {
       return res.status(400).json({ error: "No current message found" });
     }
 
-    // ✅ Chat model using OpenRouter
+    // Chat model configured with OpenRouter
     const model = new ChatOpenAI({
       modelName: "gpt-4",
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseUrl: "https://openrouter.ai/api/v1",
+      openAIApiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
       temperature: 0.5,
     });
 
@@ -58,14 +58,11 @@ export const handler = async (req, res) => {
 
     const docs = await splitter.createDocuments([notionContent]);
 
-    // ✅ Embeddings configured correctly for OpenRouter
+    // Embeddings configured correctly for OpenRouter
     const vectorStore = new MemoryVectorStore(
       new OpenAIEmbeddings({
-        model: "text-embedding-3-small", // can be changed to another supported embedding model
-        configuration: {
-          apiKey: process.env.OPENROUTER_API_KEY,
-          baseURL: "https://openrouter.ai/api/v1",
-        },
+        openAIApiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: "https://openrouter.ai/api/v1",
       })
     );
 
@@ -131,7 +128,6 @@ Question: {question}`;
     return res.status(200).json({ response });
   } catch (error) {
     console.error("API Error:", error);
-    // ✅ Always return something to avoid blank frontend bubbles
     return res.status(500).json({
       response: "⚠️ Sorry, something went wrong while processing your request.",
       error: error.message,
