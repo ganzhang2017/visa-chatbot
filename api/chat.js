@@ -42,7 +42,7 @@ export const handler = async (req, res) => {
 
         const model = new ChatOpenAI({
             modelName: "gpt-4",
-            openAIApiKey: process.env.OPENAI_API_KEY,
+            openAIApiKey: process.env.OPENROUTER_API_KEY, // Corrected variable name
             baseURL: "https://openrouter.ai/api/v1", // OpenRouter API endpoint
             temperature: 0.5
         });
@@ -57,7 +57,10 @@ export const handler = async (req, res) => {
 
         const docs = await splitter.createDocuments([notionContent]);
         
-        const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY, baseURL: "https://openrouter.ai/api/v1" }));
+        const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings({ 
+            openAIApiKey: process.env.OPENROUTER_API_KEY, // Corrected variable name
+            baseURL: "https://openrouter.ai/api/v1" 
+        }));
         await vectorStore.addDocuments(docs);
         const retriever = vectorStore.asRetriever();
 
