@@ -9,13 +9,12 @@ const kv = createClient({
 
 // Simple text search function
 function findRelevantSections(content, query, maxSections = 5) {
-    console.log('🔍 Searching for relevant content...');
-    
     const paragraphs = content.split('\n\n').filter(p => p.trim().length > 100);
     const queryWords = query.toLowerCase()
         .replace(/[^\w\s]/g, ' ')
         .split(/\s+/)
-        .filter(word => word.length > 2);
+        .filter(word => word.length > 2)
+        .filter(word => !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'may', 'new', 'now', 'old', 'see', 'two', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use'].includes(word));
     
     const scoredParagraphs = paragraphs.map(paragraph => {
         const paraLower = paragraph.toLowerCase();
@@ -23,8 +22,14 @@ function findRelevantSections(content, query, maxSections = 5) {
         
         queryWords.forEach(word => {
             const matches = (paraLower.match(new RegExp(word, 'g')) || []).length;
-            score += matches;
+            score += matches * (word.length > 4 ? 2 : 1);
         });
+        
+        // Bonus for exact phrase matches
+        const queryPhrase = query.toLowerCase();
+        if (paraLower.includes(queryPhrase)) {
+            score += 10;
+        }
         
         return { paragraph, score };
     });
@@ -38,60 +43,39 @@ function findRelevantSections(content, query, maxSections = 5) {
     return relevantSections.join('\n\n---\n\n');
 }
 
-// Test OpenRouter API directly
-async function testOpenRouterAPI(message) {
-    console.log('🧪 Testing OpenRouter API directly...');
+// Call OpenRouter API
+async function callOpenRouter(prompt) {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
+            'X-Title': 'Visa Chatbot'
+        },
+        body: JSON.stringify({
+            model: 'openai/gpt-oss-120b:free',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are a helpful and knowledgeable visa chatbot specializing in the UK Global Talent Visa. Answer questions based strictly on the provided context. If information is not in the context, politely say you don\'t have that specific information.'
+                },
+                {
+                    role: 'user',
+                    content: prompt
+                }
+            ],
+            max_tokens: 500,
+            temperature: 0.7
+        })
+    });
     
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    console.log('🔑 API Key exists:', !!apiKey);
-    console.log('🔑 API Key prefix:', apiKey ? apiKey.substring(0, 8) + '...' : 'None');
-    
-    try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
-                'X-Title': 'Visa Chatbot'
-            },
-            body: JSON.stringify({
-                model: 'openai/gpt-3.5-turbo',  // Using cheaper model for testing
-                messages: [
-                    {
-                        role: 'user',
-                        content: message
-                    }
-                ],
-                max_tokens: 150
-            })
-        });
-        
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-        
-        const responseText = await response.text();
-        console.log('📡 Raw response length:', responseText.length);
-        console.log('📡 Response starts with:', responseText.substring(0, 200));
-        
-        if (response.ok) {
-            try {
-                const jsonData = JSON.parse(responseText);
-                console.log('✅ Successfully parsed JSON response');
-                return jsonData.choices[0].message.content;
-            } catch (parseError) {
-                console.error('❌ Failed to parse JSON:', parseError.message);
-                return `Error parsing response: ${parseError.message}`;
-            }
-        } else {
-            console.error('❌ API call failed with status:', response.status);
-            return `API Error (${response.status}): ${responseText.substring(0, 500)}`;
-        }
-        
-    } catch (error) {
-        console.error('❌ Fetch error:', error);
-        return `Network Error: ${error.message}`;
+    if (!response.ok) {
+        throw new Error(`OpenRouter API error: ${response.status}`);
     }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
 }
 
 // Utility function to parse the request body
@@ -109,8 +93,6 @@ async function getRequestBody(req) {
 
 // The chat endpoint handler
 export const handler = async (req, res) => {
-    console.log('🚀 Handler started - Debug version');
-    
     try {
         const { messages, userId } = await getRequestBody(req);
 
@@ -123,43 +105,47 @@ export const handler = async (req, res) => {
             return res.status(400).json({ error: 'No current message found' });
         }
 
-        console.log('💬 Processing message:', currentMessage.content);
-
-        // Get content for context
-        console.log('📄 Getting content...');
+        // Get content and find relevant sections
         const notionContent = await getNotionPageContent();
         const relevantContext = findRelevantSections(notionContent, currentMessage.content);
 
-        // Create a simple prompt
-        const prompt = `You are a helpful visa chatbot. Based on the context below, answer this question about the UK Global Talent Visa:
+        // Format chat history (keep last 4 exchanges)
+        const chatHistory = messages.slice(-8)
+            .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+            .join('\n');
 
-Context: ${relevantContext.substring(0, 2000)}
+        // Create comprehensive prompt
+        const prompt = `Previous conversation:
+${chatHistory}
 
-Question: ${currentMessage.content}
+Relevant context from UK Global Talent Visa guide:
+${relevantContext.substring(0, 3000)}
 
-Answer briefly:`;
+Current question: ${currentMessage.content}
 
-        // Test OpenRouter API directly
-        const response = await testOpenRouterAPI(prompt);
+Please provide a helpful answer based on the context above. If the question cannot be answered with the provided context, politely explain that you don't have that specific information in the visa guide.`;
 
-        // Store conversation history
+        // Get response from OpenRouter
+        const response = await callOpenRouter(prompt);
+
+        // Try to store conversation history (non-blocking)
         if (userId) {
-            await kv.set(userId, JSON.stringify([...messages, { role: 'assistant', content: response }]));
+            try {
+                const updatedMessages = [...messages, { role: 'assistant', content: response }];
+                await kv.set(userId, JSON.stringify(updatedMessages));
+            } catch (kvError) {
+                console.error('KV Store warning:', kvError.message);
+                // Continue without saving
+            }
         }
         
-        console.log('🎉 Returning response');
         return res.status(200).json({ response });
 
     } catch (error) {
-        console.error('❌ Handler Error:', {
-            message: error.message,
-            name: error.name,
-            stack: error.stack
-        });
-        
+        console.error('API Error:', error.message);
         return res.status(500).json({ 
-            error: error.message,
-            type: error.constructor.name 
+            error: 'I apologize, but I encountered an error processing your request. Please try again.',
+            details: error.message
         });
     }
 };
