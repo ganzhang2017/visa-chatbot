@@ -1,108 +1,64 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
-    const chatForm = document.getElementById('chat-form');
-    const resumeUpload = document.getElementById('resume-upload');
-    let sessionId = sessionStorage.getItem('sessionId') || `session-${Date.now()}`;
-    sessionStorage.setItem('sessionId', sessionId);
+    const chatContainer = document.getElementById('chat-container');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const userId = getUniqueUserId(); // Function to get or create a unique user ID
 
-    // Get message history from session storage
-    const messageHistory = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
-    
-    // Display initial messages
-    messageHistory.forEach(msg => {
-        appendMessage(msg.role === 'user' ? 'user' : 'bot', msg.content);
+    // Send the initial 'start' message to trigger the guided workflow
+    sendMessage('start');
+
+    messageForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            addMessageToChat(message, 'user');
+            sendMessage(message);
+            messageInput.value = '';
+        }
     });
 
-    if (messageHistory.length === 0) {
-        initChat();
-    }
-
-    function appendMessage(sender, message) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', `${sender}-message`);
-        messageElement.textContent = message;
-        chatBox.appendChild(messageElement);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    async function sendMessage(message, isResumeAnalysis = false) {
-        if (!isResumeAnalysis) {
-            appendMessage('user', message);
-            // Add user message to history
-            messageHistory.push({ role: 'user', content: message });
-            userInput.value = '';
+    async function sendMessage(message) {
+        // Hide the resume upload button on the first message
+        const uploadButton = document.querySelector('.resume-upload');
+        if (uploadButton && message === 'start') {
+            uploadButton.style.display = 'none';
         }
 
         try {
-            const body = { 
-                messages: messageHistory,
-                userId: sessionId 
-            };
-            
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    messages: [{ role: 'user', content: message }],
+                    userId: userId,
+                }),
             });
 
             const data = await response.json();
-            
-            // Add bot message to history
-            messageHistory.push({ role: 'bot', content: data.response });
-            sessionStorage.setItem('chatHistory', JSON.stringify(messageHistory));
-            
-            appendMessage('bot', data.response);
-
+            addMessageToChat(data.response, 'bot');
         } catch (error) {
-            console.error('Error:', error);
-            appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+            console.error('Error sending message:', error);
+            addMessageToChat('Sorry, an error occurred. Please try again.', 'bot');
         }
     }
 
-    async function uploadResume(file) {
-        const formData = new FormData();
-        formData.append('resume', file);
-        
-        appendMessage('bot', 'Uploading and analyzing your resume...');
-
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-            const data = await response.json();
-            
-            const resumeMessage = `Here is the text from the resume: \n\n${data.extractedText}`;
-            // Add bot's analysis message to history before sending to the bot
-            messageHistory.push({ role: 'bot', content: 'Uploading and analyzing your resume...' });
-            messageHistory.push({ role: 'bot', content: resumeMessage });
-            sessionStorage.setItem('chatHistory', JSON.stringify(messageHistory));
-
-            await sendMessage(resumeMessage, true);
-
-        } catch (error) {
-            console.error('Error:', error);
-            appendMessage('bot', 'Sorry, there was an issue uploading or analyzing your resume.');
-        }
+    function addMessageToChat(message, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', `${sender}-message`);
+        messageElement.innerHTML = `<p>${message}</p>`;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const message = userInput.value.trim();
-        if (message) {
-            sendMessage(message);
+    // A simple way to get or create a unique user ID for session tracking
+    function getUniqueUserId() {
+        let id = localStorage.getItem('chat-user-id');
+        if (!id) {
+            id = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+            localStorage.setItem('chat-user-id', id);
         }
-    });
-
-    resumeUpload.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            uploadResume(file);
-        }
-    });
-
-    function initChat() {
-        appendMessage('bot', 'Hello! I will guide you through a pre-screening for the UK Global Talent Visa. How can I help you today?');
+        return id;
     }
 });
