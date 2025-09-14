@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>UK Visa Bot</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .chat { border: 1px solid #ccc; height: 400px; padding: 10px; overflow-y: scroll; }
+        .input { width: 100%; padding: 10px; margin-top: 10px; }
+        button { padding: 10px 20px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🇬🇧 UK Global Talent Visa Bot</h1>
+    <div id="chat" class="chat">
+        <p>Bot: Hello! Ask me about UK Global Talent Visa.</p>
+    </div>
+    <input type="text" id="input" class="input" placeholder="Type your question...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('input');
+            const chat = document.getElementById('chat');
+            const message = input.value;
+            
+            if (!message) return;
+            
+            // Add user message
+            chat.innerHTML += `<p>You: ${message}</p>`;
+            
+            // Simple response
+            chat.innerHTML += `<p>Bot: I can help with visa eligibility, costs, timeline, and documents. What specifically do you want to know?</p>`;
+            
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        document.getElementById('input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
