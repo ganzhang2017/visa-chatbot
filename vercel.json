@@ -1,10 +1,4 @@
 {
-  "installCommand": "npm install --legacy-peer-deps",
-  "build": {
-    "env": {
-      "NPM_FLAGS": "--legacy-peer-deps"
-    }
-  },
   "functions": {
     "api/chat.js": {
       "maxDuration": 30
@@ -12,26 +6,5 @@
     "api/upload.js": {
       "maxDuration": 30
     }
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/html; charset=utf-8"
-        }
-      ]
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    }
-  ]
+  }
 }
