@@ -61,6 +61,8 @@
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 15px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow-y: auto;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #f5f5f5;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex-direction: column;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.message {</span></p>
@@ -71,6 +73,7 @@
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>word-wrap: break-word;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 14px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>line-height: 1.3;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>white-space: pre-wrap;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.bot-message {</span></p>
@@ -258,6 +261,186 @@
 <p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Test API connection</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.testConnection();</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('✅ Chatbot ready</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('✅ Chatbot ready');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>generateUserId() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return 'user_' + Math.random().toString(36).substr(2, 9);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>async testConnection() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const response = await fetch('/api/chat', {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>method: 'POST',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>headers: { 'Content-Type': 'application/json' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>body: JSON.stringify({<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>message: 'test',<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>userId: this.userId,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>history: []</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (!response.ok) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>console.warn('⚠️ API connection test failed');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>console.log('✅ API connection successful');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} catch (error) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>console.warn('⚠️ API not available:', error.message);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>async handleSend() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const message = this.input.value.trim();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!message || this.isLoading) return;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Clear input</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.input.value = '';</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Add user message</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.addMessage(message, 'user');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Show loading</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.isLoading = true;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.sendBtn.disabled = true;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const loadingMsg = this.addMessage('Thinking', 'bot', true);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>// Try API call first</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const response = await fetch('/api/chat', {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>method: 'POST',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>headers: { 'Content-Type': 'application/json' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>body: JSON.stringify({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>message: message,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>userId: this.userId,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>history: this.history.slice(-10) // Keep last 10 messages</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (response.ok) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>const data = await response.json();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.removeMessage(loadingMsg);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.addMessage(data.response, 'bot');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>// Update history</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.history.push(</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{ role: 'user', content: message },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{ role: 'assistant', content: data.response }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>throw new Error('API call failed');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} catch (error) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>console.warn('API unavailable, using fallback responses');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.removeMessage(loadingMsg);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>// Fallback responses</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const fallbackResponse = this.getFallbackResponse(message);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.addMessage(fallbackResponse, 'bot');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.isLoading = false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.sendBtn.disabled = false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>getFallbackResponse(message) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const msg = message.toLowerCase();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (msg.includes('eligib')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return '🎯 For UK Global Talent Visa eligibility, you need:\n\n• Exceptional talent or promise in:\n<span class="Apple-converted-space">  </span>- Science, engineering, medicine\n<span class="Apple-converted-space">  </span>- Digital technology\n<span class="Apple-converted-space">  </span>- Arts and culture\n<span class="Apple-converted-space">  </span>- Research and academia\n\n• Endorsement from approved body\n• English proficiency\n• Financial requirements\n\nWould you like details about any specific field?';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (msg.includes('cost') || msg.includes('fee')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return '💰 UK Global Talent Visa costs:\n\n• Application fee: £623\n• Healthcare surcharge: £624/year\n• Endorsement fee: varies by field\n• Priority processing: +£500-£1000\n\nTotal typically £2000-£4000 depending on circumstances.';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (msg.includes('timeline') || msg.includes('long')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return '⏰ Processing timeline:\n\n• Endorsement: 8-12 weeks\n• Visa application: 3-8 weeks\n• Fast-track available: 5-10 days\n\nTotal process: 3-6 months typically\n\nStart endorsement application first!';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (msg.includes('document')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return '📋 Required documents:\n\n• Passport\n• Evidence of exceptional talent\n• CV and portfolio\n• Letters of recommendation\n• English test results\n• TB test (some countries)\n• Financial evidence\n\nSpecific requirements vary by endorsing body.';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return '🤖 I can help with UK Global Talent Visa questions about:\n\n• Eligibility requirements\n• Application process\n• Costs and timeline\n• Required documents\n• Endorsing bodies\n\nCould you be more specific about what you\'d like to know?';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>async handleFileUpload(e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const file = e.target.files[0];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!file) return;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (file.type !== 'application/pdf') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.uploadStatus.textContent = 'Please upload a PDF file';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.uploadStatus.style.color = '#dc3545';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (file.size &gt; 5 * 1024 * 1024) { // 5MB limit</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.uploadStatus.textContent = 'File too large (max 5MB)';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.uploadStatus.style.color = '#dc3545';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.uploadStatus.textContent = 'Uploading...';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.uploadStatus.style.color = '#666';</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const formData = new FormData();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>formData.append('file', file);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>formData.append('userId', this.userId);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const response = await fetch('/api/upload', {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>method: 'POST',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>body: formData</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (response.ok) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>const data = await response.json();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.uploadStatus.textContent = '✅ Uploaded successfully';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.uploadStatus.style.color = '#28a745';</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>// Add bot message about the upload</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.addMessage('📄 I\'ve received your resume! I can now provide more personalized advice about your UK Global Talent Visa application. Feel free to ask specific questions!', 'bot');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>throw new Error('Upload failed');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} catch (error) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.uploadStatus.textContent = '❌ Upload failed';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.uploadStatus.style.color = '#dc3545';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>console.error('Upload error:', error);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Clear file input</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.fileInput.value = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>addMessage(text, sender, isLoading = false) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const messageDiv = document.createElement('div');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>messageDiv.className = `message ${sender}-message`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (isLoading) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>messageDiv.classList.add('loading', 'typing');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>messageDiv.textContent = text;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.messages.appendChild(messageDiv);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.messages.scrollTop = this.messages.scrollHeight;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return messageDiv;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>removeMessage(messageElement) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (messageElement &amp;&amp; messageElement.parentNode) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>messageElement.parentNode.removeChild(messageElement);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Initialize chatbot when page loads</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.addEventListener('DOMContentLoaded', () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>new SimpleChatbot();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
 </body>
 </html>
