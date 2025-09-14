@@ -27,411 +27,237 @@
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>body {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-family: system-ui, -apple-system, sans-serif;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #667eea;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>min-height: 100vh;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>justify-content: center;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 10px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.chat-container {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.container {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>max-width: 500px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>max-width: 400px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 600px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>box-shadow: 0 10px 30px rgba(0,0,0,0.2);</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex-direction: column;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow: hidden;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.chat-header {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.header {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #667eea;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 15px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-weight: 600;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 18px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-weight: bold;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.chat-box {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.messages {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex: 1;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 15px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>overflow-y: auto;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex-direction: column;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 15px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #f8f9fa;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #f5f5f5;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.message {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>max-width: 80%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 12px 16px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 18px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-bottom: 15px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 10px 12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 15px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>max-width: 85%;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>word-wrap: break-word;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>line-height: 1.4;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>line-height: 1.3;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.bot-message {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #2c3e50;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #333;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-self: flex-start;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-bottom-left-radius: 6px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 5px rgba(0,0,0,0.1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-bottom-left-radius: 5px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>box-shadow: 0 1px 3px rgba(0,0,0,0.1);</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.user-message {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #667eea;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-self: flex-end;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-bottom-right-radius: 6px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-left: auto;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-bottom-right-radius: 5px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.input-container {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.input-area {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 15px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: white;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-top: 1px solid #dee2e6;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-top: 1px solid #eee;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.chat-form {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.input-row {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-bottom: 15px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#user-input {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#messageInput {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>flex: 1;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 12px 16px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 2px solid #dee2e6;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 25px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 10px 12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 1px solid #ddd;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 20px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>outline: none;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 14px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#user-input:focus {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#messageInput:focus {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-color: #667eea;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.send-btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#sendBtn {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #667eea;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: none;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 25px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 12px 24px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 10px 16px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cursor: pointer;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-weight: 600;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-weight: bold;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>min-width: 60px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.send-btn:hover {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>opacity: 0.9;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#sendBtn:hover:not(:disabled) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #5a6fd8;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.send-btn:disabled {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#sendBtn:disabled {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>opacity: 0.5;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cursor: not-allowed;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.file-upload-container {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.upload-row {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: flex;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>gap: 10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>justify-content: center;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.upload-btn {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#uploadBtn {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #28a745;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: white;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: none;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 8px 16px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-radius: 15px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>padding: 6px 12px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cursor: pointer;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-weight: 600;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.upload-btn:hover {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#uploadBtn:hover {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #218838;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#resume-upload {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#fileInput {</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>display: none;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.upload-status {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #6c757d;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.error-message {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #dc3545;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-top: 5px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.status {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-size: 11px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #666;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin-left: 10px;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.loading {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: white;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #e9ecef;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #666;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align-self: flex-start;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border-bottom-left-radius: 6px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 5px rgba(0,0,0,0.1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>font-style: italic;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.loading::after {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>content: '●●●';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>animation: loading 1.4s infinite;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.error {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>background: #f8d7da;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>color: #721c24;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>border: 1px solid #f5c6cb;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>@keyframes loading {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>0%, 80%, 100% { opacity: 0; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>40% { opacity: 1; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.typing::after {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>content: '...';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>animation: typing 1.5s infinite;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>@keyframes typing {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>0%, 33% { content: '.'; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>34%, 66% { content: '..'; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>67%, 100% { content: '...'; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>@media (max-width: 500px) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>.container {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>height: 100vh;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>border-radius: 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
 <p class="p1"><span class="s1">&lt;/head&gt;</span></p>
 <p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="chat-container"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="chat-header"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="container"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="header"&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>🇬🇧 UK Global Talent Visa Assistant</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="chat-box" id="chat-box"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- Messages will appear here --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="messages" id="messages"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- Messages appear here --&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="input-container"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;form class="chat-form" id="chat-form"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>type="text"<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>id="user-input"<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>placeholder="Ask me about the UK Global Talent Visa..."</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>autocomplete="off"</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button type="submit" class="send-btn" id="send-btn"&gt;Send&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/form&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="file-upload-container"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button type="button" class="upload-btn" onclick="triggerFileUpload()"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>📄 Upload Resume</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input type="file" id="resume-upload" accept=".pdf"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;span class="upload-status" id="upload-status"&gt;&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="input-area"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="input-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input type="text" id="messageInput" placeholder="Ask about the UK Global Talent Visa..." maxlength="500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button id="sendBtn"&gt;Send&lt;/button&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="error-container"&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="upload-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button id="uploadBtn"&gt;📄 Upload Resume (PDF)&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input type="file" id="fileInput" accept=".pdf"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;span class="status" id="uploadStatus"&gt;&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
 <p class="p2"><span class="s1"></span><br></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Global variables</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let messageHistory = [];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let isLoading = false;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// DOM elements</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const chatBox = document.getElementById('chat-box');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const chatForm = document.getElementById('chat-form');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const userInput = document.getElementById('user-input');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const sendBtn = document.getElementById('send-btn');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const resumeUpload = document.getElementById('resume-upload');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const uploadStatus = document.getElementById('upload-status');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const errorContainer = document.getElementById('error-container');</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Initialize when page loads</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.addEventListener('DOMContentLoaded', function() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>console.log('Chatbot initializing...');</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Show welcome message</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>addMessage('👋 Welcome! I\'m your UK Global Talent Visa assistant. I can help you with eligibility requirements, application processes, required documents, and more. What would you like to know?', 'bot');</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Add event listeners</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>chatForm.addEventListener('submit', handleSubmit);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>resumeUpload.addEventListener('change', handleFileUpload);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>console.log('Chatbot initialized successfully!');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Handle form submission</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>async function handleSubmit(e) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>e.preventDefault();</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const message = userInput.value.trim();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (!message || isLoading) return;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>console.log('Sending message:', message);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>addMessage(message, 'user');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>userInput.value = '';</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>await sendMessage(message);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Send message to API</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>async function sendMessage(message) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (isLoading) return;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>isLoading = true;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>sendBtn.disabled = true;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Show loading</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const loadingElement = addMessage('Thinking...', 'loading');</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>try {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Add to history</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>messageHistory.push({ role: 'user', content: message });</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('Calling API with:', { messages: messageHistory });</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const response = await fetch('/api/chat', {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>method: 'POST',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>headers: {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>'Content-Type': 'application/json',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>},</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>body: JSON.stringify({</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>messages: messageHistory,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>userId: getUserId()</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}),</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('API response status:', response.status);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!response.ok) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const errorText = await response.text();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>console.error('API error:', errorText);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>throw new Error(`API error: ${response.status}`);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const data = await response.json();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('API response data:', data);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Remove loading message</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (loadingElement) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>chatBox.removeChild(loadingElement);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (data.response) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>addMessage(data.response, 'bot');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>messageHistory.push({ role: 'assistant', content: data.response });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>throw new Error('No response received from API');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} catch (error) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.error('Error sending message:', error);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Simple chatbot implementation</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>class SimpleChatbot {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>constructor() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.messages = document.getElementById('messages');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.input = document.getElementById('messageInput');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.sendBtn = document.getElementById('sendBtn');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.uploadBtn = document.getElementById('uploadBtn');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.fileInput = document.getElementById('fileInput');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.uploadStatus = document.getElementById('uploadStatus');</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Remove loading message</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (loadingElement &amp;&amp; loadingElement.parentNode) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>chatBox.removeChild(loadingElement);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.history = [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.userId = this.generateUserId();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.isLoading = false;</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>addMessage('I apologize, but I encountered an error. Please try again. If the problem persists, check your internet connection.', 'bot');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>showError('Connection error: ' + error.message);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} finally {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>isLoading = false;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>sendBtn.disabled = false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.init();</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Add message to chat</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function addMessage(message, sender) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const messageElement = document.createElement('div');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>messageElement.classList.add('message', `${sender}-message`);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>messageElement.innerHTML = `&lt;p&gt;${message}&lt;/p&gt;`;</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>chatBox.appendChild(messageElement);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>chatBox.scrollTop = chatBox.scrollHeight;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return messageElement;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Handle file upload</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>async function handleFileUpload(e) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const file = e.target.files[0];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (!file) return;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>console.log('Uploading file:', file.name);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (file.type !== 'application/pdf') {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>uploadStatus.textContent = 'Please upload a PDF file only.';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>uploadStatus.style.color = '#dc3545';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>uploadStatus.textContent = 'Uploading...';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>uploadStatus.style.color = '#6c757d';</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const formData = new FormData();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>formData.append('resume', file);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>try {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const response = await fetch('/api/upload', {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>method: 'POST',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>body: formData,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('Upload response status:', response.status);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const data = await response.json();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('Upload response data:', data);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>init() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('🤖 Chatbot starting...');</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (response.ok) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>uploadStatus.textContent = `✅ ${file.name} uploaded!`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>uploadStatus.style.color = '#28a745';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (data.response) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>addMessage(data.response, 'bot');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Event listeners</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.sendBtn.addEventListener('click', () =&gt; this.handleSend());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.input.addEventListener('keypress', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (e.key === 'Enter' &amp;&amp; !e.shiftKey) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>this.handleSend();</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>throw new Error(data.error || 'Upload failed');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} catch (error) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.error('Upload error:', error);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>uploadStatus.textContent = '❌ Upload failed';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>uploadStatus.style.color = '#dc3545';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>showError('Upload error: ' + error.message);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Trigger file upload</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function triggerFileUpload() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>resumeUpload.click();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Show error message</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function showError(message) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>errorContainer.innerHTML = `&lt;div class="error-message"&gt;${message}&lt;/div&gt;`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>errorContainer.innerHTML = '';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}, 5000);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Get user ID</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function getUserId() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let id = localStorage.getItem('visa-chat-user-id');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (!id) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>id = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>localStorage.setItem('visa-chat-user-id', id);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return id;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Test API connection on load</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>setTimeout(() =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>console.log('Testing API connection...');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>fetch('/api/chat', {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>method: 'POST',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>headers: { 'Content-Type': 'application/json' },</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>body: JSON.stringify({</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>messages: [{ role: 'user', content: 'test' }],</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>userId: getUserId()</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>})</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}).then(response =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('API test response:', response.status);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}).catch(error =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.error('API test failed:', error);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}, 2000);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.uploadBtn.addEventListener('click', () =&gt; this.fileInput.click());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.fileInput.addEventListener('change', (e) =&gt; this.handleFileUpload(e));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Welcome message</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.addMessage('👋 Hello! I\'m your UK Global Talent Visa assistant. I can help you with:\n\n• Eligibility requirements\n• Application process\n• Required documents\n• Timeline and costs\n• Endorsement bodies\n\nWhat would you like to know?', 'bot');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Test API connection</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.testConnection();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>console.log('✅ Chatbot ready</span></p>
 </body>
 </html>
