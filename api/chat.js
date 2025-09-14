@@ -7,10 +7,10 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
 
-// 1. Initialize the Vercel KV client
+// 1. Initialize the Vercel KV client using your Upstash environment variables
 const kv = createClient({
-  url: process.env.KV_URL,
-  token: process.env.KV_TOKEN,
+  url: process.env.UPSTASH_REDIS_URL,
+  token: process.env.REDIS_TOKEN,
 });
 
 // 2. Define Workflow Steps
