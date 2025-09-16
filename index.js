@@ -288,9 +288,13 @@ export default function handler(req, res) {
                 this.addMessage('👋 Welcome! I will guide you through the UK Global Talent Visa application for Digital Technology.', 'bot');
                 
                 setTimeout(() => {
+                    this.addMessage('ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. It offers flexibility, a pathway to settlement, and freedom to change jobs or be self-employed.', 'bot');
+                }, 1000);
+                
+                setTimeout(() => {
                     this.addMessage('Let us start with some quick topics. What would you like to know about first?', 'bot');
                     this.showInitialOptions();
-                }, 1000);
+                }, 2500);
             }
             
             showInitialOptions() {
@@ -474,8 +478,19 @@ export default function handler(req, res) {
                 this.addProgressIndicator('Step 4/5: Resume Upload');
                 
                 setTimeout(() => {
-                    this.addMessage('Great! Now please upload your resume (PDF format) so I can analyze your background in detail.', 'bot');
+                    this.addMessage('Great! Now please upload your resume (PDF format only) so I can analyze your background in detail.', 'bot');
                     this.uploadBtn.style.display = 'inline-block';
+                    
+                    // Add continue without upload option
+                    const buttonHtml = '<div class="button-group" style="margin-top: 15px;">' +
+                        '<button class="guide-button" onclick="bot.performFinalAnalysis()">Skip resume upload</button>' +
+                        '</div>';
+                    
+                    const buttonMessage = document.createElement('div');
+                    buttonMessage.className = 'message bot-message';
+                    buttonMessage.innerHTML = buttonHtml;
+                    this.chat.appendChild(buttonMessage);
+                    this.scrollToBottom();
                 }, 1000);
             }
             
