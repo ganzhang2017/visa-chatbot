@@ -1,4 +1,54 @@
-export default function handler(req, res) {
+async handleFileUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Check file type client-side
+                if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                    this.uploadStatus.textContent = '❌ Please upload a PDF file only.';
+                    this.addMessage('Please upload a PDF file only.', 'bot');
+                    return;
+                }
+                
+                // Check file size (10MB limit)
+                if (file.size > 10 * 1024 * 1024) {
+                    this.uploadStatus.textContent = '❌ File too large (max 10MB).';
+                    this.addMessage('File too large. Please upload a PDF smaller than 10MB.', 'bot');
+                    return;
+                }
+                
+                this.uploadStatus.textContent = 'Uploading and processing...';
+                this.addMessage('Uploading resume: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + 'MB)', 'user');
+                
+                const formData = new FormData();
+                formData.append('resume', file);
+                
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: {
+                            'X-User-Id': this.getUserId() // Send user ID for resume association
+                        },
+                        body: formData,
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        this.uploadStatus.textContent = '✅ ' + file.name + ' processed!';
+                        const message = data.file.textExtracted ? 
+                            '✅ Resume uploaded and text extracted successfully! I can now analyze your background in detail.' :
+                            '✅ Resume uploaded! File processed (limited text extraction).';
+                        this.addMessage(message, 'bot');
+                        
+                        this.userProfile.resume = file.name;
+                        this.userProfile.resumeSize = file.size;
+                        this.userProfile.resumeProcessed = data.file.textExtracted;
+                        
+                        setTimeout(() => {
+                            this.performFinalAnalysis();
+                        }, 1500);
+                    } else {
+                        throw new Errorexport default function handler(req, res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   
   const html = `<!DOCTYPE html>
@@ -512,12 +562,22 @@ export default function handler(req, res) {
                 const file = e.target.files[0];
                 if (!file) return;
                 
-                if (file.type !== 'application/pdf') {
-                    this.uploadStatus.textContent = 'Please upload a PDF file only.';
+                // Check file type client-side
+                if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                    this.uploadStatus.textContent = '❌ Please upload a PDF file only.';
+                    this.addMessage('Please upload a PDF file only.', 'bot');
+                    return;
+                }
+                
+                // Check file size (10MB limit)
+                if (file.size > 10 * 1024 * 1024) {
+                    this.uploadStatus.textContent = '❌ File too large (max 10MB).';
+                    this.addMessage('File too large. Please upload a PDF smaller than 10MB.', 'bot');
                     return;
                 }
                 
                 this.uploadStatus.textContent = 'Uploading...';
+                this.addMessage('Uploading resume: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + 'MB)', 'user');
                 
                 const formData = new FormData();
                 formData.append('resume', file);
@@ -530,25 +590,27 @@ export default function handler(req, res) {
                     
                     const data = await response.json();
                     
-                    if (response.ok) {
+                    if (response.ok && data.success) {
                         this.uploadStatus.textContent = '✅ ' + file.name + ' uploaded!';
-                        this.addMessage('Resume uploaded: ' + file.name, 'user');
+                        this.addMessage('✅ Resume uploaded successfully! Analyzing your background...', 'bot');
                         this.userProfile.resume = file.name;
+                        this.userProfile.resumeSize = file.size;
                         
                         setTimeout(() => {
                             this.performFinalAnalysis();
-                        }, 1000);
+                        }, 1500);
                     } else {
                         throw new Error(data.error || 'Upload failed');
                     }
                 } catch (error) {
                     console.error('Upload error:', error);
                     this.uploadStatus.textContent = '❌ Upload failed';
-                    this.addMessage('Upload failed. You can continue without resume upload for now.', 'bot');
+                    this.addMessage('Upload failed: ' + (error.message || 'Please try again'), 'bot');
                     
                     setTimeout(() => {
                         const buttonHtml = '<div class="button-group">' +
                             '<button class="workflow-button" onclick="bot.performFinalAnalysis()">Continue without resume</button>' +
+                            '<button class="guide-button" onclick="bot.fileInput.click()">Try upload again</button>' +
                             '</div>';
                         
                         const buttonMessage = document.createElement('div');
@@ -572,55 +634,150 @@ export default function handler(req, res) {
             }
             
             generatePersonalizedFeedback() {
-                let feedback = '📊 **Your Tech Nation Assessment:**\n\n';
+                let feedback = '📊 **Your Comprehensive Tech Nation Assessment:**\n\n';
                 
-                // Experience assessment
+                // Experience assessment with more detail
                 const expYears = this.userProfile.experience;
                 if (expYears === '0-2') {
-                    feedback += '⚠️ **Experience:** You may be better suited for the "Exceptional Promise" route rather than "Exceptional Talent".\n\n';
+                    feedback += '⚠️ **Experience Level:** With 0-2 years, you should focus on the **"Exceptional Promise"** route rather than "Exceptional Talent".\n';
+                    feedback += '• Emphasize your potential and unique contributions\n';
+                    feedback += '• Highlight any early career recognition or achievements\n';
+                    feedback += '• Show rapid learning and significant early impact\n\n';
                 } else if (expYears === '3-5') {
-                    feedback += '✅ **Experience:** Good foundation. Focus on demonstrating exceptional promise and potential.\n\n';
+                    feedback += '✅ **Experience Level:** 3-5 years is solid for **"Exceptional Promise"** route.\n';
+                    feedback += '• Focus on demonstrating rapid growth and potential\n';
+                    feedback += '• Highlight any leadership or innovation in your early career\n';
+                    feedback += '• Show external recognition despite shorter experience\n\n';
+                } else if (expYears === '6-10') {
+                    feedback += '✅ **Experience Level:** 6-10 years positions you well for **"Exceptional Talent"** route.\n';
+                    feedback += '• You should demonstrate established expertise and recognition\n';
+                    feedback += '• Focus on significant contributions and external validation\n';
+                    feedback += '• Show progression from individual contributor to industry influence\n\n';
                 } else {
-                    feedback += '✅ **Experience:** Strong experience level. You could qualify for "Exceptional Talent" route.\n\n';
+                    feedback += '🌟 **Experience Level:** 10+ years makes you an ideal candidate for **"Exceptional Talent"**.\n';
+                    feedback += '• Leverage your extensive experience and established reputation\n';
+                    feedback += '• Focus on industry-wide impact and leadership\n';
+                    feedback += '• Highlight mentorship, thought leadership, and sector contribution\n\n';
                 }
                 
-                // Role-specific feedback
+                // Role-specific detailed feedback
                 if (this.userProfile.role === 'technical') {
-                    feedback += '💻 **Technical Role Strengths:**\n';
-                    if (this.userProfile.contributions) {
+                    feedback += '💻 **Technical Role Strategy:**\n';
+                    if (this.userProfile.contributions && this.userProfile.contributions.length > 0) {
+                        feedback += 'Great foundation with: ' + this.userProfile.contributions.join(', ') + '\n\n';
+                        
                         this.userProfile.contributions.forEach(contrib => {
-                            const tips = {
-                                'opensource': '• Open Source: Great! Highlight impact and community adoption',
-                                'speaking': '• Speaking: Excellent! Document audience size and topics',
-                                'publications': '• Publications: Perfect! Include metrics like views/citations',
-                                'awards': '• Awards: Outstanding! These carry significant weight'
+                            const detailedTips = {
+                                'opensource': '🔓 **Open Source Contributions:**\n• Document download/usage statistics and community adoption\n• Highlight any contributions to major projects (Linux, Kubernetes, etc.)\n• Show impact: "My contribution improved performance by X%" or "Used by Y+ developers"\n• Include recognition from maintainers or community\n',
+                                'speaking': '🎤 **Conference Speaking:**\n• Document audience sizes, conference prestige, and topics\n• Include video links, audience feedback, and follow-up interest\n• Show progression from local meetups to major international conferences\n• Mention any keynotes, panel discussions, or workshop leadership\n',
+                                'publications': '📝 **Publications/Blogs:**\n• Include view counts, social media shares, and industry citations\n• Show influence: "My article changed how developers approach X"\n• Document any republishing by major tech publications\n• Include technical depth and innovation in your writing\n',
+                                'awards': '🏆 **Awards/Recognition:**\n• These carry the highest weight - maximize their impact\n• Include context: award criteria, competition level, industry significance\n• Show progression and consistency in recognition\n• Connect awards to specific technical achievements\n'
                             };
-                            feedback += tips[contrib] + '\n';
+                            feedback += detailedTips[contrib] + '\n';
                         });
+                    } else {
+                        feedback += '⚠️ **Action Needed:** You need to develop technical contributions outside your day job:\n';
+                        feedback += '• Start contributing to open source projects in your area of expertise\n';
+                        feedback += '• Write technical blogs about your work and innovations\n';
+                        feedback += '• Apply to speak at tech conferences and meetups\n';
+                        feedback += '• Participate in hackathons or technical competitions\n\n';
                     }
                 } else if (this.userProfile.role === 'business') {
-                    feedback += '💼 **Business Role Focus:**\n';
-                    feedback += '• Quantify your commercial impact with specific numbers\n';
-                    feedback += '• Document any mentorship or speaking outside work\n';
-                    feedback += '• Show innovation in business processes or strategies\n';
-                } else {
-                    feedback += '🎯 **Leadership Role:**\n';
-                    feedback += '• Highlight team growth and organizational impact\n';
-                    feedback += '• Document industry recognition and thought leadership\n';
-                    feedback += '• Show contribution to the wider tech ecosystem\n';
+                    feedback += '💼 **Business Role Strategy:**\n';
+                    feedback += '• **Quantify Everything:** Revenue impact, user growth, market expansion\n';
+                    feedback += '• **External Recognition:** Industry awards, media coverage, speaking opportunities\n';
+                    feedback += '• **Innovation Focus:** How you\'ve driven digital transformation or innovation\n';
+                    feedback += '• **Thought Leadership:** Publications, advisory roles, mentoring others\n';
+                    feedback += '• **Challenge:** Business roles need extra effort to show external digital tech contribution\n\n';
+                } else if (this.userProfile.role === 'leadership') {
+                    feedback += '🎯 **Leadership Role Strategy:**\n';
+                    feedback += '• **Scale & Impact:** Teams built, organizations transformed, industries influenced\n';
+                    feedback += '• **External Influence:** Board positions, advisory roles, industry body membership\n';
+                    feedback += '• **Thought Leadership:** Speaking, writing, shaping industry direction\n';
+                    feedback += '• **Mentorship:** Next generation of tech leaders you\'ve developed\n';
+                    feedback += '• **Innovation:** Technologies, methodologies, or business models you\'ve pioneered\n\n';
                 }
                 
-                feedback += '\n🎯 **Next Steps:**\n';
-                feedback += '• Gather evidence for each claim with specific examples\n';
-                feedback += '• Prepare 10 pieces of evidence across the 4 criteria\n';
-                feedback += '• Get 3 strong recommendation letters from industry leaders\n\n';
+                // Resume analysis if available
+                if (this.userProfile.resumeProcessed) {
+                    feedback += '📄 **Resume Analysis:**\n';
+                    feedback += '✅ Your resume has been processed and will be used to provide personalized advice.\n';
+                    feedback += 'When you ask questions, I can now reference your specific background and experience.\n\n';
+                } else if (this.userProfile.resume) {
+                    feedback += '📄 **Resume Upload:**\n';
+                    feedback += '⚠️ Resume uploaded but text extraction was limited. I can provide general guidance.\n';
+                    feedback += 'For best results, ensure your PDF is text-based (not scanned images).\n\n';
+                } else {
+                    feedback += '📄 **Missing Resume:**\n';
+                    feedback += '💡 Consider uploading your resume for more personalized guidance!\n\n';
+                }
+                
+                // Comprehensive next steps
+                feedback += '🎯 **Your Detailed Action Plan:**\n\n';
+                feedback += '**Phase 1: Evidence Gathering (2-3 months)**\n';
+                feedback += '• Audit your achievements against the 4 criteria\n';
+                feedback += '• Gather metrics, screenshots, and documentation\n';
+                feedback += '• Identify gaps and work on filling them\n';
+                feedback += '• Start building external recognition if lacking\n\n';
+                
+                feedback += '**Phase 2: Recommendation Letters (1 month)**\n';
+                feedback += '• Identify 3 industry leaders who know your work\n';
+                feedback += '• Provide them with your evidence portfolio for reference\n';
+                feedback += '• Ensure they understand Tech Nation criteria\n';
+                feedback += '• Get letters that complement, not duplicate, your evidence\n\n';
+                
+                feedback += '**Phase 3: Application Preparation (2-4 weeks)**\n';
+                feedback += '• Write compelling personal statement (max 1,000 words)\n';
+                feedback += '• Organize evidence portfolio (max 10 pieces)\n';
+                feedback += '• Review and refine with fresh eyes\n';
+                feedback += '• Consider professional review before submission\n\n';
+                
+                feedback += '**Success Probability Estimate:**\n';
+                let successRate = this.calculateSuccessRate();
+                if (successRate >= 75) {
+                    feedback += '🟢 **High (75%+)** - Strong foundation, focus on optimization\n';
+                } else if (successRate >= 50) {
+                    feedback += '🟡 **Medium (50-75%)** - Good potential, address key gaps\n';
+                } else {
+                    feedback += '🔴 **Needs Work (<50%)** - Build more external recognition first\n';
+                }
+                
+                feedback += '\n**Remember:** Quality over quantity. Focus on your strongest, most impactful evidence.';
                 
                 this.addMessage(feedback, 'bot');
                 
                 setTimeout(() => {
-                    this.addMessage('Would you like specific guidance on any aspect?', 'bot');
+                    this.addMessage('I now have a complete picture of your background. What would you like to focus on next?', 'bot');
                     this.showFinalOptions();
-                }, 1500);
+                }, 2000);
+            }
+            
+            calculateSuccessRate() {
+                let score = 0;
+                
+                // Experience scoring
+                if (this.userProfile.experience === '10+') score += 30;
+                else if (this.userProfile.experience === '6-10') score += 25;
+                else if (this.userProfile.experience === '3-5') score += 15;
+                else score += 5;
+                
+                // Role scoring
+                if (this.userProfile.role === 'leadership') score += 20;
+                else if (this.userProfile.role === 'technical') score += 15;
+                else score += 10;
+                
+                // Contributions scoring
+                if (this.userProfile.contributions) {
+                    score += this.userProfile.contributions.length * 8;
+                    if (this.userProfile.contributions.includes('awards')) score += 15;
+                    if (this.userProfile.contributions.includes('speaking')) score += 10;
+                }
+                
+                // Resume scoring
+                if (this.userProfile.resumeProcessed) score += 10;
+                else if (this.userProfile.resume) score += 5;
+                
+                return Math.min(score, 100);
             }
             
             showFinalOptions() {
