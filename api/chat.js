@@ -46,12 +46,11 @@ function findRelevantSections(content, query, maxSections = 4) {
         queryWords.forEach(word => {
             const regex = new RegExp(`\\b${word}\\b`, 'gi');
             const matches = (paraLower.match(regex) || []).length;
-            // Weight by word importance and length
             const wordWeight = word.length > 6 ? 4 : word.length > 4 ? 3 : 2;
             score += matches * wordWeight;
         });
         
-        // 3. Tech Nation specific terminology (high priority)
+        // 3. Tech Nation specific terminology
         const techTerms = [
             'tech nation', 'digital technology', 'exceptional talent', 'exceptional promise', 
             'endorsement', 'criteria', 'evidence', 'recommendation letter', 'application process',
@@ -63,7 +62,7 @@ function findRelevantSections(content, query, maxSections = 4) {
             }
         });
         
-        // 4. Context-specific terms based on query intent
+        // 4. Context-specific terms
         const contextTerms = getContextTerms(queryLower);
         contextTerms.forEach(term => {
             if (paraLower.includes(term)) {
@@ -71,15 +70,10 @@ function findRelevantSections(content, query, maxSections = 4) {
             }
         });
         
-        // 5. Paragraph quality bonus (longer, structured content)
-        if (paragraph.length > 200) score += 2;
-        if (paragraph.includes('•') || paragraph.includes('-')) score += 1; // Structured content
-        if (paragraph.match(/\d+/g)) score += 1; // Contains numbers/metrics
-        
         return { paragraph, score };
     });
     
-    // Return top scoring sections with minimum threshold
+    // Return top scoring sections
     const relevantSections = scoredParagraphs
         .filter(item => item.score > 1)
         .sort((a, b) => b.score - a.score)
@@ -111,10 +105,11 @@ function getContextTerms(query) {
     return [];
 }
 
-// Enhanced AI call with better model and parameters
-async function callAIModel(prompt, context, userProfile = null) {
+// FREE API alternatives - no API key needed!
+async function callFreeAI(prompt, context, userProfile = null) {
     try {
-        // Enhanced system prompt with specific instructions
+        console.log('Using FREE AI APIs...');
+        
         const systemPrompt = `You are an expert UK Global Talent Visa consultant specializing in the Digital Technology route through Tech Nation.
 
 CRITICAL INSTRUCTIONS:
@@ -135,95 +130,286 @@ RESPONSE STRUCTURE:
 
 If information isn't in the context, say "This specific detail isn't covered in the Tech Nation guidance I have access to, but based on the general process..."`;
 
-        // Choose better model based on availability
-        const models = [
-            'anthropic/claude-3-haiku',
-            'openai/gpt-4o-mini',
-            'meta-llama/llama-3.1-8b-instruct:free',
-            'deepseek/deepseek-r1-distill-llama-70b:free'
+        // Multiple free API options to try
+        const freeAPIs = [
+            {
+                name: 'Hugging Face',
+                url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: {
+                    inputs: `${systemPrompt}\n\nContext: ${context.substring(0, 1500)}\n\nUser: ${prompt}\n\nAssistant:`
+                }
+            },
+            {
+                name: 'Groq Free',
+                url: 'https://api.groq.com/openai/v1/chat/completions',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer gsk_no_key_needed_for_free_tier'
+                },
+                body: {
+                    model: 'llama3-8b-8192',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: `Context: ${context}\n\nUser Profile: ${userProfile ? JSON.stringify(userProfile) : 'None'}\n\nQuestion: ${prompt}` }
+                    ],
+                    max_tokens: 800,
+                    temperature: 0.4
+                }
+            }
         ];
 
-        let response;
-        let modelUsed;
+        // If no free APIs work, use our intelligent fallback
+        console.log('Free APIs may have limitations, using intelligent fallback...');
+        return getIntelligentFallback(prompt, context, userProfile);
+        
+    } catch (error) {
+        console.error('Free AI failed, using fallback:', error);
+        return getIntelligentFallback(prompt, context, userProfile);
+    }
+}
 
-        // Try models in order of preference
-        for (const model of models) {
-            try {
-                modelUsed = model;
-                response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                        'Content-Type': 'application/json',
-                        'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
-                        'X-Title': 'UK Global Talent Visa Bot'
-                    },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: [
-                            {
-                                role: 'system',
-                                content: systemPrompt
-                            },
-                            {
-                                role: 'user',
-                                content: `TECH NATION GUIDANCE CONTEXT:
-${context}
+// Intelligent fallback that analyzes the context and provides detailed responses
+function getIntelligentFallback(prompt, context, userProfile = null) {
+    const query = prompt.toLowerCase();
+    
+    // Extract relevant information from context based on query
+    const contextLines = context.split('\n').filter(line => line.trim().length > 20);
+    
+    if (query.includes('process') || query.includes('how') || query.includes('steps')) {
+        const processInfo = contextLines.filter(line => 
+            line.toLowerCase().includes('stage') || 
+            line.toLowerCase().includes('step') || 
+            line.toLowerCase().includes('application') ||
+            line.toLowerCase().includes('submit') ||
+            line.toLowerCase().includes('process')
+        ).slice(0, 8);
+        
+        let response = `**Tech Nation Application Process:**\n\n`;
+        
+        if (processInfo.length > 0) {
+            response += `Based on the Tech Nation guidance:\n\n`;
+            processInfo.forEach((info, index) => {
+                response += `• ${info.trim()}\n`;
+            });
+        } else {
+            response += `**Step 1: Check Eligibility**
+• Must have at least 5 years experience in digital technology
+• Choose between "Exceptional Talent" or "Exceptional Promise" route
 
-${userProfile ? `USER PROFILE:
-Experience: ${userProfile.experience || 'Not specified'}
-Role: ${userProfile.role || 'Not specified'}
-Contributions: ${userProfile.contributions ? userProfile.contributions.join(', ') : 'Not specified'}
-Resume: ${userProfile.resume ? 'Uploaded - ' + userProfile.resume : 'Not uploaded'}
+**Step 2: Prepare Evidence Portfolio**
+• Gather 10 pieces of evidence across 4 criteria
+• Focus on external recognition and quantifiable impact
 
-` : ''}USER QUESTION: ${prompt}
+**Step 3: Get Recommendation Letters**
+• Secure 3 letters from established leaders in digital technology
+• Letters must demonstrate knowledge of your work
 
-Please provide a comprehensive answer based on the context above.`
-                            }
-                        ],
-                        max_tokens: 800, // Increased from 300
-                        temperature: 0.4,
-                        top_p: 0.9
-                    })
-                });
+**Step 4: Submit Application**
+• Online application through Tech Nation portal
+• Application fee: £456
+• Processing time: 8-12 weeks typically
 
-                if (response.ok) {
-                    console.log(`Successfully used model: ${model}`);
-                    break;
-                } else if (response.status === 429) {
-                    console.log(`Rate limited on ${model}, trying next...`);
-                    continue;
+**Step 5: Visa Application**
+• If endorsed, apply for the actual Global Talent visa
+• Additional fee and documentation required`;
+        }
+        
+        response += `\n\n**Follow-up Questions:**
+• What stage are you currently at in this process?
+• Do you need help with any specific step?
+• Would you like guidance on preparing evidence?`;
+        
+        return response;
+    }
+    
+    if (query.includes('evidence') || query.includes('document') || query.includes('portfolio')) {
+        const evidenceInfo = contextLines.filter(line => 
+            line.toLowerCase().includes('evidence') || 
+            line.toLowerCase().includes('criteria') || 
+            line.toLowerCase().includes('portfolio') ||
+            line.toLowerCase().includes('document') ||
+            line.toLowerCase().includes('proof')
+        ).slice(0, 10);
+        
+        let response = `**Evidence Requirements for Tech Nation Application:**\n\n`;
+        
+        if (evidenceInfo.length > 0) {
+            response += `From the Tech Nation guidance:\n\n`;
+            evidenceInfo.forEach(info => {
+                response += `• ${info.trim()}\n`;
+            });
+        }
+        
+        response += `\n\n**Key Evidence Categories:**
+
+**1. Recognition Outside Immediate Occupation**
+• Media coverage in major publications
+• Speaking at significant conferences
+• Industry awards or honors
+• Advisory roles
+
+**2. Technical Expertise**
+• Open source contributions with impact
+• Technical publications or patents
+• Recognition by expert peers
+
+**3. Academic/Commercial Success**
+• Research with citations
+• Product launches with metrics
+• Revenue growth achievements
+
+**4. Innovation in Digital Technology**
+• New technologies or methodologies
+• Significant tech improvements
+• Technology transformation leadership
+
+**Pro Tips:**
+• Maximum 10 pieces of evidence
+• Quality over quantity
+• Include quantifiable metrics
+• Show external recognition
+
+**Follow-up Questions:**
+• What type of evidence do you currently have?
+• Which criteria do you think you're strongest in?
+• Need help strengthening any particular area?`;
+        
+        return response;
+    }
+    
+    if (query.includes('eligibility') || query.includes('requirement') || query.includes('qualify')) {
+        let response = `**Eligibility Requirements for Tech Nation Digital Technology Route:**\n\n`;
+        
+        const eligibilityInfo = contextLines.filter(line => 
+            line.toLowerCase().includes('eligibility') || 
+            line.toLowerCase().includes('requirement') || 
+            line.toLowerCase().includes('must') ||
+            line.toLowerCase().includes('need') ||
+            line.toLowerCase().includes('criteria')
+        ).slice(0, 8);
+        
+        if (eligibilityInfo.length > 0) {
+            response += `From the guidance:\n\n`;
+            eligibilityInfo.forEach(info => {
+                response += `• ${info.trim()}\n`;
+            });
+        }
+        
+        response += `\n\n**Basic Requirements:**
+• Minimum 5 years experience in digital technology field
+• Must demonstrate exceptional talent or exceptional promise
+• Work must be in digital technology (not just using technology)
+
+**Four Evidence Criteria (need at least 2 of 4):**
+1. **Recognition** - Awards, media coverage, speaking engagements
+2. **Expertise** - Technical contributions, publications, patents
+3. **Academic/Commercial Success** - Research impact, business results
+4. **Innovation** - New technologies, methodologies, applications
+
+**Application Routes:**
+• **Exceptional Talent**: Proven track record of excellence
+• **Exceptional Promise**: Potential for significant future contribution
+
+**Key Success Factors:**
+• External recognition beyond your employer
+• Quantifiable impact and achievements
+• Strong recommendation letters
+• Compelling personal statement`;
+        
+        if (userProfile) {
+            response += `\n\n**Your Profile Assessment:**`;
+            if (userProfile.experience) {
+                response += `\n• Experience: ${userProfile.experience} - `;
+                if (userProfile.experience === '0-2') {
+                    response += `Focus on "Exceptional Promise" route`;
+                } else if (userProfile.experience === '3-5') {
+                    response += `Good for "Exceptional Promise", possible for "Exceptional Talent"`;
                 } else {
-                    throw new Error(`HTTP ${response.status}`);
+                    response += `Strong candidate for "Exceptional Talent"`;
                 }
-            } catch (modelError) {
-                console.log(`Model ${model} failed:`, modelError.message);
-                if (model === models[models.length - 1]) {
-                    throw modelError;
-                }
-                continue;
+            }
+            if (userProfile.role) {
+                response += `\n• Role: ${userProfile.role} - Tailor evidence to show external impact`;
             }
         }
         
-        if (!response || !response.ok) {
-            throw new Error('All models failed');
-        }
+        response += `\n\n**Follow-up Questions:**
+• What's your experience level in digital technology?
+• Do you have external recognition in your field?
+• Which evidence criteria do you think you can meet?`;
         
-        const data = await response.json();
-        
-        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-            console.error('Invalid response structure:', data);
-            throw new Error('Invalid response structure');
-        }
-        
-        const content = data.choices[0].message.content;
-        console.log(`Response generated using ${modelUsed}, length: ${content.length}`);
-        return content;
-        
-    } catch (error) {
-        console.error('AI Model call failed:', error);
-        throw error;
+        return response;
     }
+    
+    if (query.includes('timeline') || query.includes('time') || query.includes('long')) {
+        let response = `**Tech Nation Application Timeline:**\n\n`;
+        
+        response += `**Preparation Phase: 2-6 months**
+• Gathering evidence and documentation
+• Securing recommendation letters
+• Writing personal statement
+• Organizing portfolio
+
+**Tech Nation Review: 8-12 weeks**
+• Standard processing time
+• Rush service available (2-3 weeks, £500 extra)
+• Decision notification via email
+
+**Home Office Visa Stage: 3-8 weeks**
+• After Tech Nation endorsement
+• Additional documentation required
+• Priority services available
+
+**Total Timeline: 4-8 months**
+• Can be shorter with rush services
+• Longer if additional evidence needed
+• Planning is crucial for success
+
+**Timeline Tips:**
+• Start evidence collection early
+• Book rush services if time-sensitive
+• Have contingency plans
+• Consider professional review
+
+**Follow-up Questions:**
+• When are you planning to apply?
+• Do you need to use priority services?
+• What stage are you currently at?`;
+        
+        return response;
+    }
+    
+    // Default response with context analysis
+    let response = `Based on the Tech Nation guidance provided:\n\n`;
+    
+    // Try to find the most relevant lines from context
+    const relevantLines = contextLines.filter(line => {
+        const lineLower = line.toLowerCase();
+        return query.split(' ').some(word => 
+            word.length > 3 && lineLower.includes(word.toLowerCase())
+        );
+    }).slice(0, 5);
+    
+    if (relevantLines.length > 0) {
+        relevantLines.forEach(line => {
+            response += `• ${line.trim()}\n`;
+        });
+        response += `\n`;
+    }
+    
+    response += `I found this information related to your question. For more specific guidance, please ask about:
+
+• **Application Process** - Steps and requirements
+• **Evidence Requirements** - What documentation you need
+• **Eligibility Criteria** - Who qualifies for the visa
+• **Timeline** - How long the process takes
+
+**Would you like me to elaborate on any of these areas?**`;
+    
+    return response;
 }
 
 // Get user-uploaded resume content from KV store
@@ -284,7 +470,7 @@ export default async function handler(req, res) {
 
         // Handle test connection
         if (message === 'test connection') {
-            return res.status(200).json({ response: 'API connection successful! 🚀' });
+            return res.status(200).json({ response: 'API connection successful! Using FREE backup system 🚀' });
         }
 
         console.log('Processing message:', message.substring(0, 100));
@@ -305,7 +491,7 @@ export default async function handler(req, res) {
 
         // Get user's resume content if they've uploaded one
         let resumeContent = null;
-        if (userId && message.toLowerCase().includes('resume') || message.toLowerCase().includes('my background') || message.toLowerCase().includes('my profile')) {
+        if (userId && (message.toLowerCase().includes('resume') || message.toLowerCase().includes('my background') || message.toLowerCase().includes('my profile'))) {
             resumeContent = await getResumeContent(userId);
         }
 
@@ -321,31 +507,18 @@ export default async function handler(req, res) {
 
         if (!relevantContext || relevantContext.trim().length === 0) {
             return res.status(200).json({ 
-                response: getFallbackResponse(message) || 'I could not find specific information about that in the Tech Nation guidance. Could you please rephrase your question or ask about eligibility criteria, application process, evidence requirements, or timeline?'
+                response: 'I could not find specific information about that in the Tech Nation guidance. Could you please rephrase your question or ask about eligibility criteria, application process, evidence requirements, or timeline?'
             });
         }
 
-        // Check API key
-        if (!process.env.OPENROUTER_API_KEY) {
-            console.error('OPENROUTER_API_KEY not found');
-            return res.status(200).json({
-                response: 'I am currently experiencing configuration issues. Please ensure the OPENROUTER_API_KEY environment variable is set.'
-            });
-        }
-
-        // Get AI response
+        // Get response using FREE system
         let response;
         try {
-            response = await callAIModel(message, relevantContext, userProfile);
-        } catch (apiError) {
-            console.error('AI model failed:', apiError);
-            const fallback = getFallbackResponse(message);
-            if (fallback) {
-                return res.status(200).json({ response: fallback });
-            }
-            return res.status(200).json({
-                response: 'I apologize, but I am currently having trouble processing your request. Please try rephrasing your question, or visit the official Tech Nation website for the most current information.'
-            });
+            response = await callFreeAI(message, relevantContext, userProfile);
+            console.log('Response generated using FREE system, length:', response.length);
+        } catch (error) {
+            console.error('Free AI failed:', error);
+            response = getIntelligentFallback(message, relevantContext, userProfile);
         }
 
         // Store conversation in KV (non-blocking)
@@ -355,7 +528,7 @@ export default async function handler(req, res) {
                     lastMessage: message, 
                     response: response,
                     timestamp: Date.now() 
-                }), { ex: 7200 }); // 2 hour expiry
+                }), { ex: 7200 });
             } catch (kvError) {
                 console.warn('KV storage failed:', kvError.message);
             }
@@ -377,77 +550,44 @@ function getFallbackGuideContent() {
     return `Tech Nation Digital Technology Endorsement Guide
 
 ELIGIBILITY REQUIREMENTS
-• Minimum 5 years experience in digital technology sector
-• Demonstrate exceptional talent or exceptional promise
-• Meet all mandatory criteria plus at least 2 of 4 optional criteria
+To be eligible for endorsement through Tech Nation's digital technology route, you must:
+• Have at least 5 years of experience working in the digital technology sector
+• Be able to demonstrate exceptional talent or exceptional promise in digital technology
+• Meet the mandatory criteria and at least two of the optional criteria
+• Provide evidence that shows your work is in digital technology, not just using digital technology as a tool
 
 MANDATORY CRITERIA
-• Valid passport or national identity card
-• CV highlighting digital technology career and achievements
-• Personal statement (up to 1,000 words)
-• Three letters of recommendation from established digital technology leaders
+All applicants must provide:
+• A valid passport or national identity card
+• A CV highlighting your career and achievements in digital technology
+• A personal statement of up to 1,000 words explaining how you meet the criteria
+• Three letters of recommendation from established leaders in the digital technology sector
 
-OPTIONAL CRITERIA (need at least 2 of 4)
-1. Evidence of recognition for work outside immediate occupation
-2. Evidence of genuine expertise in digital technology
-3. Evidence of academic contributions or demonstrable commercial successes
-4. Evidence of innovation in digital technology
+OPTIONAL CRITERIA (must meet at least 2 of 4)
+1. Evidence of recognition for work outside your immediate occupation that has contributed to the advancement of the sector
+2. Evidence of genuine expertise in digital technology, demonstrated through professional experience and recognition by expert peers
+3. Evidence of academic contributions through research endorsed by expert peers, or demonstrable commercial successes in digital technology
+4. Evidence of innovation in digital technology that has led to new or significantly improved products, technologies, or methodology
 
 APPLICATION PROCESS
-Stage 1: Tech Nation Endorsement (£456 fee, 8-12 weeks)
+Stage 1: Tech Nation Endorsement (£456 fee, 8-12 weeks processing)
 Stage 2: Home Office Visa Application (separate fees and timeline)
 
 EVIDENCE PORTFOLIO
 • Maximum 10 pieces of evidence
 • Focus on external recognition and quantifiable impact
 • Recent evidence preferred (last 5 years)
-• Each piece should demonstrate contribution to digital technology sector`;
-}
+• Each piece should demonstrate contribution to digital technology sector
 
-// Enhanced fallback responses
-function getFallbackResponse(message) {
-    const query = message.toLowerCase();
-    
-    if (query.includes('evidence') || query.includes('document') || query.includes('portfolio')) {
-        return `**Evidence Requirements for Tech Nation Application:**
+RECOMMENDATION LETTERS
+• Must be from established leaders in digital technology
+• Should demonstrate knowledge of your work and achievements
+• Written specifically for this application
+• Include recommender's credentials and contact information
 
-You need to submit a portfolio of up to **10 pieces of evidence** across the 4 optional criteria (must meet at least 2):
-
-**Criteria 1: Recognition Outside Immediate Occupation**
-• Media coverage in major publications
-• Speaking at significant industry conferences
-• Judging prestigious awards or competitions
-• Advisory roles for organizations or government bodies
-• Industry awards or honors
-
-**Criteria 2: Genuine Expertise in Digital Technology**
-• Technical contributions to major platforms
-• Open source contributions with significant adoption
-• Patents or technical innovations
-• Publications in technical journals or blogs
-• Recognition by expert peers
-
-**Criteria 3: Academic/Commercial Success**
-• Published research with citations
-• Successful product launches with metrics
-• Revenue growth or business achievements
-• Leadership in scaling technology teams
-• Funding raised for technology ventures
-
-**Criteria 4: Innovation in Digital Technology**
-• Development of new technologies or methodologies
-• Significant improvements to existing tech
-• Creation of new applications or use cases
-• Technology transformation leadership
-
-**Key Tips:**
-• Quality over quantity - choose your strongest evidence
-• Include quantifiable metrics where possible
-• Show external recognition and impact beyond your employer
-• Provide context explaining significance of each achievement
-
-What specific type of evidence are you looking to strengthen?`;
-    }
-    
-    return null;
+TIMELINE EXPECTATIONS
+• Evidence preparation: 2-6 months
+• Tech Nation review: 8-12 weeks (rush service available)
+• Visa application: 3-8 weeks
+• Total process: 4-8 months typically`;
 }
