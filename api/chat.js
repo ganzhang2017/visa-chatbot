@@ -77,55 +77,78 @@ function findRelevantSections(content, query, maxSections = 3) {
 
 // Call OpenRouter API with improved prompts
 async function callOpenRouter(prompt, context) {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
-            'X-Title': 'UK Global Talent Visa Bot'
-        },
-        body: JSON.stringify({
-            model: 'deepseek/deepseek-r1-distill-llama-70b:free',
-            messages: [
-                {
-                    role: 'system',
-                    content: `You are a specialized UK Global Talent Visa assistant focused ONLY on the Digital Technology route via Tech Nation.
+    try {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
+                'X-Title': 'UK Global Talent Visa Bot'
+            },
+            body: JSON.stringify({
+                model: 'deepseek/deepseek-r1-distill-llama-70b:free',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a specialized UK Global Talent Visa assistant focused ONLY on the Digital Technology route via Tech Nation.
 
 CRITICAL RULES:
 - Answer ONLY based on the provided context from the Tech Nation guide
 - Keep responses under 200 words and well-structured
-- Use bullet points and clear formatting
+- Use bullet points and clear formatting where appropriate
 - If information isn't in the context, say "I don't have that specific information in the Tech Nation guide"
 - Focus ONLY on digital technology talent visa, not other categories
 - Be conversational but concise
 - Always end with a follow-up question to continue the guidance`
-                },
-                {
-                    role: 'user',
-                    content: `Context from Tech Nation Guide:
+                    },
+                    {
+                        role: 'user',
+                        content: `Context from Tech Nation Guide:
 ${context}
 
 User question: ${prompt}
 
 Please provide a concise, helpful answer based ONLY on the provided context.`
-                }
-            ],
-            max_tokens: 300,
-            temperature: 0.3
-        })
-    });
-    
-    if (!response.ok) {
-        throw new Error(`OpenRouter API error: ${response.status}`);
+                    }
+                ],
+                max_tokens: 300,
+                temperature: 0.3
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('OpenRouter API error:', response.status, errorText);
+            throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+            console.error('Invalid OpenRouter response structure:', data);
+            throw new Error('Invalid response structure from OpenRouter');
+        }
+        
+        return data.choices[0].message.content;
+        
+    } catch (error) {
+        console.error('OpenRouter API call failed:', error);
+        throw error;
     }
-    
-    const data = await response.json();
-    return data.choices[0].message.content;
 }
 
 // Main handler
 export default async function handler(req, res) {
+    // Add CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -154,6 +177,11 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Empty message' });
         }
 
+        // Handle test connection
+        if (message === 'test connection') {
+            return res.status(200).json({ response: 'API connection successful! 🚀' });
+        }
+
         console.log('Processing message:', message.substring(0, 100));
 
         // Get PDF content
@@ -162,15 +190,15 @@ export default async function handler(req, res) {
             pdfContent = await getNotionPageContent();
             if (!pdfContent || pdfContent.trim().length === 0) {
                 console.error('PDF content is empty or failed to load');
-                return res.status(500).json({ 
-                    error: 'Unable to load guidance document. Please try again.' 
+                return res.status(200).json({ 
+                    response: 'I apologize, but I am unable to load the Tech Nation guidance document right now. Please try again in a moment, or ask me general questions about the UK Global Talent Visa process.' 
                 });
             }
             console.log('PDF content loaded, length:', pdfContent.length);
         } catch (error) {
             console.error('Error loading PDF content:', error);
-            return res.status(500).json({ 
-                error: 'Unable to access guidance document. Please try again.' 
+            return res.status(200).json({ 
+                response: 'I am currently unable to access the detailed Tech Nation guidance. However, I can still help with general questions about the UK Global Talent Visa application process. What would you like to know?'
             });
         }
 
@@ -180,12 +208,28 @@ export default async function handler(req, res) {
 
         if (!relevantContext || relevantContext.trim().length === 0) {
             return res.status(200).json({ 
-                response: 'I apologize, but I couldn\'t find relevant information in the Tech Nation guide for your question. Could you please rephrase or ask about eligibility criteria, application process, or required evidence?' 
+                response: 'I could not find specific information about that in the Tech Nation guide. Could you please rephrase your question or ask about eligibility criteria, application process, or required evidence for the Digital Technology route?'
+            });
+        }
+
+        // Check if OpenRouter API key is available
+        if (!process.env.OPENROUTER_API_KEY) {
+            console.error('OPENROUTER_API_KEY not found in environment variables');
+            return res.status(200).json({
+                response: 'I am currently experiencing configuration issues. Please check that all environment variables are properly set, particularly the OPENROUTER_API_KEY.'
             });
         }
 
         // Get AI response
-        const response = await callOpenRouter(message, relevantContext);
+        let response;
+        try {
+            response = await callOpenRouter(message, relevantContext);
+        } catch (apiError) {
+            console.error('OpenRouter API failed:', apiError);
+            return res.status(200).json({
+                response: 'I apologize, but I am currently having trouble processing your request due to an API issue. Please try again in a moment. In the meantime, I recommend checking the official Tech Nation website for the most up-to-date information.'
+            });
+        }
 
         // Optional: Store in KV (non-blocking)
         if (userId && process.env.UPSTASH_REDIS_URL) {
@@ -203,8 +247,8 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Chat API Error:', error);
-        return res.status(500).json({ 
-            error: 'I encountered an error processing your request. Please try again.',
+        return res.status(200).json({ 
+            response: 'I encountered an unexpected error while processing your request. Please try asking your question again, and if the problem persists, you may want to check the Tech Nation website directly for guidance.',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }

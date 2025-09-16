@@ -285,24 +285,22 @@ export default function handler(req, res) {
             }
             
             startWorkflow() {
-                this.addMessage('👋 Welcome! I\'ll guide you through the UK Global Talent Visa application for Digital Technology.', 'bot');
+                this.addMessage('👋 Welcome! I will guide you through the UK Global Talent Visa application for Digital Technology.', 'bot');
                 
                 setTimeout(() => {
-                    this.addMessage('Let\'s start with some quick topics. What would you like to know about first?', 'bot');
+                    this.addMessage('Let us start with some quick topics. What would you like to know about first?', 'bot');
                     this.showInitialOptions();
                 }, 1000);
             }
             
             showInitialOptions() {
-                const buttonsHtml = \`
-                    <div class="button-group">
-                        <button class="guide-button" onclick="bot.handleTopicChoice('eligibility')">📋 Eligibility</button>
-                        <button class="guide-button" onclick="bot.handleTopicChoice('process')">🚀 Process</button>
-                        <button class="guide-button" onclick="bot.handleTopicChoice('documents')">📄 Documents</button>
-                        <button class="guide-button" onclick="bot.handleTopicChoice('timeline')">⏰ Timeline</button>
-                        <button class="workflow-button" onclick="bot.startAssessment()">✨ Start Assessment</button>
-                    </div>
-                \`;
+                const buttonsHtml = '<div class="button-group">' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\'eligibility\')">📋 Eligibility</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\'process\')">🚀 Process</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\'documents\')">📄 Documents</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\'timeline\')">⏰ Timeline</button>' +
+                    '<button class="workflow-button" onclick="bot.startAssessment()">✨ Start Assessment</button>' +
+                    '</div>';
                 
                 const buttonMessage = document.createElement('div');
                 buttonMessage.className = 'message bot-message';
@@ -326,12 +324,10 @@ export default function handler(req, res) {
                 // Show assessment option after topic
                 setTimeout(() => {
                     this.addMessage('Would you like a personalized assessment of your profile?', 'bot');
-                    const buttonHtml = \`
-                        <div class="button-group">
-                            <button class="workflow-button" onclick="bot.startAssessment()">Yes, assess my profile</button>
-                            <button class="guide-button" onclick="bot.showInitialOptions()">Ask another question</button>
-                        </div>
-                    \`;
+                    const buttonHtml = '<div class="button-group">' +
+                        '<button class="workflow-button" onclick="bot.startAssessment()">Yes, assess my profile</button>' +
+                        '<button class="guide-button" onclick="bot.showInitialOptions()">Ask another question</button>' +
+                        '</div>';
                     
                     const buttonMessage = document.createElement('div');
                     buttonMessage.className = 'message bot-message';
@@ -344,7 +340,7 @@ export default function handler(req, res) {
             startAssessment() {
                 this.currentStep = 'experience';
                 this.addProgressIndicator('Step 1/5: Experience');
-                this.addMessage('Let\'s assess your profile for the Tech Nation application! 🎯', 'bot');
+                this.addMessage('Let us assess your profile for the Tech Nation application! 🎯', 'bot');
                 
                 setTimeout(() => {
                     this.addMessage('How many years of experience do you have in digital technology?', 'bot');
@@ -353,14 +349,12 @@ export default function handler(req, res) {
             }
             
             showExperienceOptions() {
-                const buttonsHtml = \`
-                    <div class="button-group">
-                        <button class="workflow-button" onclick="bot.selectExperience('0-2')">0-2 years</button>
-                        <button class="workflow-button" onclick="bot.selectExperience('3-5')">3-5 years</button>
-                        <button class="workflow-button" onclick="bot.selectExperience('6-10')">6-10 years</button>
-                        <button class="workflow-button" onclick="bot.selectExperience('10+')">10+ years</button>
-                    </div>
-                \`;
+                const buttonsHtml = '<div class="button-group">' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\'0-2\')">0-2 years</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\'3-5\')">3-5 years</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\'6-10\')">6-10 years</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\'10+\')">10+ years</button>' +
+                    '</div>';
                 
                 const buttonMessage = document.createElement('div');
                 buttonMessage.className = 'message bot-message';
@@ -371,7 +365,7 @@ export default function handler(req, res) {
             
             selectExperience(experience) {
                 this.userProfile.experience = experience;
-                this.addMessage(\`I have \${experience} years of experience\`, 'user');
+                this.addMessage('I have ' + experience + ' years of experience', 'user');
                 
                 this.currentStep = 'role';
                 this.addProgressIndicator('Step 2/5: Role');
@@ -383,13 +377,11 @@ export default function handler(req, res) {
             }
             
             showRoleOptions() {
-                const buttonsHtml = \`
-                    <div class="button-group">
-                        <button class="workflow-button" onclick="bot.selectRole('technical')">👩‍💻 Technical (Developer, Engineer, etc.)</button>
-                        <button class="workflow-button" onclick="bot.selectRole('business')">💼 Business (PM, Marketing, etc.)</button>
-                        <button class="workflow-button" onclick="bot.selectRole('leadership')">🎯 Leadership (CTO, Head of, etc.)</button>
-                    </div>
-                \`;
+                const buttonsHtml = '<div class="button-group">' +
+                    '<button class="workflow-button" onclick="bot.selectRole(\'technical\')">👩‍💻 Technical (Developer, Engineer, etc.)</button>' +
+                    '<button class="workflow-button" onclick="bot.selectRole(\'business\')">💼 Business (PM, Marketing, etc.)</button>' +
+                    '<button class="workflow-button" onclick="bot.selectRole(\'leadership\')">🎯 Leadership (CTO, Head of, etc.)</button>' +
+                    '</div>';
                 
                 const buttonMessage = document.createElement('div');
                 buttonMessage.className = 'message bot-message';
@@ -406,7 +398,7 @@ export default function handler(req, res) {
                     'leadership': 'Leadership role (CTO, Head of, etc.)'
                 };
                 
-                this.addMessage(\`My role is: \${roleLabels[role]}\`, 'user');
+                this.addMessage('My role is: ' + roleLabels[role], 'user');
                 
                 this.currentStep = 'specifics';
                 this.addProgressIndicator('Step 3/5: Background');
@@ -425,15 +417,13 @@ export default function handler(req, res) {
                 
                 setTimeout(() => {
                     this.addMessage('Do you have any of the following? (Select all that apply)', 'bot');
-                    const buttonsHtml = \`
-                        <div class="button-group">
-                            <button class="workflow-button" onclick="bot.addTechContribution('opensource')">🔓 Open Source Contributions</button>
-                            <button class="workflow-button" onclick="bot.addTechContribution('speaking')">🎤 Conference Speaking</button>
-                            <button class="workflow-button" onclick="bot.addTechContribution('publications')">📝 Publications/Blogs</button>
-                            <button class="workflow-button" onclick="bot.addTechContribution('awards')">🏆 Awards/Recognition</button>
-                            <button class="workflow-button" onclick="bot.finishContributions()">✅ Done</button>
-                        </div>
-                    \`;
+                    const buttonsHtml = '<div class="button-group">' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\'opensource\')">🔓 Open Source Contributions</button>' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\'speaking\')">🎤 Conference Speaking</button>' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\'publications\')">📝 Publications/Blogs</button>' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\'awards\')">🏆 Awards/Recognition</button>' +
+                        '<button class="workflow-button" onclick="bot.finishContributions()">✅ Done</button>' +
+                        '</div>';
                     
                     const buttonMessage = document.createElement('div');
                     buttonMessage.className = 'message bot-message';
@@ -448,14 +438,12 @@ export default function handler(req, res) {
                 
                 setTimeout(() => {
                     this.addMessage('What kind of business impact have you achieved?', 'bot');
-                    const buttonsHtml = \`
-                        <div class="button-group">
-                            <button class="workflow-button" onclick="bot.selectImpact('revenue')">💰 Revenue Growth</button>
-                            <button class="workflow-button" onclick="bot.selectImpact('products')">🚀 Product Launches</button>
-                            <button class="workflow-button" onclick="bot.selectImpact('scaling')">📈 Team/Company Scaling</button>
-                            <button class="workflow-button" onclick="bot.selectImpact('innovation')">💡 Innovation Projects</button>
-                        </div>
-                    \`;
+                    const buttonsHtml = '<div class="button-group">' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\'revenue\')">💰 Revenue Growth</button>' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\'products\')">🚀 Product Launches</button>' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\'scaling\')">📈 Team/Company Scaling</button>' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\'innovation\')">💡 Innovation Projects</button>' +
+                        '</div>';
                     
                     const buttonMessage = document.createElement('div');
                     buttonMessage.className = 'message bot-message';
@@ -477,7 +465,7 @@ export default function handler(req, res) {
                         'awards': 'Awards/Recognition'
                     };
                     
-                    this.addMessage(\`Added: \${labels[contribution]}\`, 'user');
+                    this.addMessage('Added: ' + labels[contribution], 'user');
                 }
             }
             
@@ -501,7 +489,7 @@ export default function handler(req, res) {
                     'innovation': 'Innovation Projects'
                 };
                 
-                this.addMessage(\`My main impact: \${labels[impact]}\`, 'user');
+                this.addMessage('My main impact: ' + labels[impact], 'user');
                 this.finishContributions();
             }
             
@@ -528,8 +516,8 @@ export default function handler(req, res) {
                     const data = await response.json();
                     
                     if (response.ok) {
-                        this.uploadStatus.textContent = \`✅ \${file.name} uploaded!\`;
-                        this.addMessage(\`Resume uploaded: \${file.name}\`, 'user');
+                        this.uploadStatus.textContent = '✅ ' + file.name + ' uploaded!';
+                        this.addMessage('Resume uploaded: ' + file.name, 'user');
                         this.userProfile.resume = file.name;
                         
                         setTimeout(() => {
@@ -544,11 +532,9 @@ export default function handler(req, res) {
                     this.addMessage('Upload failed. You can continue without resume upload for now.', 'bot');
                     
                     setTimeout(() => {
-                        const buttonHtml = \`
-                            <div class="button-group">
-                                <button class="workflow-button" onclick="bot.performFinalAnalysis()">Continue without resume</button>
-                            </div>
-                        \`;
+                        const buttonHtml = '<div class="button-group">' +
+                            '<button class="workflow-button" onclick="bot.performFinalAnalysis()">Continue without resume</button>' +
+                            '</div>';
                         
                         const buttonMessage = document.createElement('div');
                         buttonMessage.className = 'message bot-message';
@@ -623,14 +609,12 @@ export default function handler(req, res) {
             }
             
             showFinalOptions() {
-                const buttonsHtml = \`
-                    <div class="button-group">
-                        <button class="guide-button" onclick="bot.askQuestion('evidence requirements')">📋 Evidence Requirements</button>
-                        <button class="guide-button" onclick="bot.askQuestion('recommendation letters')">✍️ Recommendation Letters</button>
-                        <button class="guide-button" onclick="bot.askQuestion('application timeline')">⏰ Application Timeline</button>
-                        <button class="workflow-button" onclick="bot.enableFreeChat()">💬 Ask Anything</button>
-                    </div>
-                \`;
+                const buttonsHtml = '<div class="button-group">' +
+                    '<button class="guide-button" onclick="bot.askQuestion(\'evidence requirements\')">📋 Evidence Requirements</button>' +
+                    '<button class="guide-button" onclick="bot.askQuestion(\'recommendation letters\')">✍️ Recommendation Letters</button>' +
+                    '<button class="guide-button" onclick="bot.askQuestion(\'application timeline\')">⏰ Application Timeline</button>' +
+                    '<button class="workflow-button" onclick="bot.enableFreeChat()">💬 Ask Anything</button>' +
+                    '</div>';
                 
                 const buttonMessage = document.createElement('div');
                 buttonMessage.className = 'message bot-message';
@@ -646,12 +630,12 @@ export default function handler(req, res) {
                 this.messageInput.placeholder = 'Ask me anything about Tech Nation application...';
                 this.messageInput.focus();
                 
-                this.addMessage('Great! Now you can ask me any specific questions about the Tech Nation application process. I\'ll use the official guidance to help you! 💬', 'bot');
+                this.addMessage('Great! Now you can ask me any specific questions about the Tech Nation application process. I will use the official guidance to help you! 💬', 'bot');
             }
             
             async askQuestion(topic) {
-                this.addMessage(\`Tell me about \${topic}\`, 'user');
-                await this.sendToAPI(\`Tell me about \${topic} for Tech Nation application\`);
+                this.addMessage('Tell me about ' + topic, 'user');
+                await this.sendToAPI('Tell me about ' + topic + ' for Tech Nation application');
                 
                 // Enable free chat after answering
                 setTimeout(() => {
@@ -720,15 +704,15 @@ export default function handler(req, res) {
             
             addMessage(text, sender) {
                 const messageElement = document.createElement('div');
-                messageElement.classList.add('message', \`\${sender}-message\`);
+                messageElement.classList.add('message', sender + '-message');
                 
                 // Format text with basic markdown-like styling
                 let formattedText = text
-                    .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
-                    .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
-                    .replace(/\\n/g, '<br>');
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
                 
-                messageElement.innerHTML = \`<p>\${formattedText}</p>\`;
+                messageElement.innerHTML = '<p>' + formattedText + '</p>';
                 
                 this.chat.appendChild(messageElement);
                 this.scrollToBottom();
@@ -739,7 +723,7 @@ export default function handler(req, res) {
             addProgressIndicator(step) {
                 const progressElement = document.createElement('div');
                 progressElement.classList.add('progress-indicator');
-                progressElement.innerHTML = \`📍 \${step}\`;
+                progressElement.innerHTML = '📍 ' + step;
                 
                 this.chat.appendChild(progressElement);
                 this.scrollToBottom();
@@ -750,10 +734,19 @@ export default function handler(req, res) {
             }
             
             getUserId() {
-                let id = localStorage.getItem('tech-nation-user-id');
+                let id;
+                try {
+                    id = localStorage.getItem('tech-nation-user-id');
+                } catch (e) {
+                    id = null;
+                }
                 if (!id) {
                     id = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-                    localStorage.setItem('tech-nation-user-id', id);
+                    try {
+                        localStorage.setItem('tech-nation-user-id', id);
+                    } catch (e) {
+                        // localStorage not available, continue with id
+                    }
                 }
                 return id;
             }
