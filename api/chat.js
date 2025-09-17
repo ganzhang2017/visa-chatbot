@@ -529,13 +529,13 @@ export default async function handler(req, res) {
             });
         }
 
-        // Get response using FREE system
+        // Get AI response using FREE system
         let response;
         try {
             response = await callFreeAI(message, relevantContext, userProfile);
             console.log('Response generated using FREE system, length:', response.length);
         } catch (error) {
-            console.error('Free AI failed:', error);
+            console.error('Free AI failed, using fallback:', error);
             response = getIntelligentFallback(message, relevantContext, userProfile);
         }
 
