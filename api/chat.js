@@ -1,11 +1,22 @@
 import { createClient } from "@vercel/kv";
 import { getNotionPageContent } from './guide_content.js';
 
-// Initialize the Vercel KV client
-const kv = createClient({
-  url: process.env.UPSTASH_REDIS_URL,
-  token: process.env.REDIS_TOKEN,
-});
+// Initialize KV client only if environment variables are available
+let kv = null;
+if (process.env.UPSTASH_REDIS_URL && process.env.REDIS_TOKEN) {
+    try {
+        kv = createClient({
+            url: process.env.UPSTASH_REDIS_URL,
+            token: process.env.REDIS_TOKEN,
+        });
+        console.log('✅ Redis KV client initialized');
+    } catch (error) {
+        console.warn('⚠️ Redis KV client initialization failed:', error.message);
+        kv = null;
+    }
+} else {
+    console.log('ℹ️ Redis environment variables not found, running without KV storage');
+}
 
 // Enhanced semantic search with better scoring
 function findRelevantSections(content, query, maxSections = 4) {
@@ -174,11 +185,14 @@ If information isn't in the context, say "This specific detail isn't covered in 
 // Intelligent fallback that analyzes the context and provides detailed responses
 function getIntelligentFallback(prompt, context, userProfile = null) {
     const query = prompt.toLowerCase();
+    const isChinese = userProfile?.language === 'zh';
     
     // Extract relevant information from context based on query
     const contextLines = context.split('\n').filter(line => line.trim().length > 20);
     
-    if (query.includes('process') || query.includes('how') || query.includes('steps')) {
+    if (query.includes('process') || query.includes('how') || query.includes('steps') || 
+        query.includes('流程') || query.includes('如何') || query.includes('步骤')) {
+        
         const processInfo = contextLines.filter(line => 
             line.toLowerCase().includes('stage') || 
             line.toLowerCase().includes('step') || 
@@ -187,63 +201,147 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
             line.toLowerCase().includes('process')
         ).slice(0, 8);
         
-        let response = `**Tech Nation Application Process:**\n\n`;
+        if (isChinese) {
+            response += `**Tech Nation申请流程：**\n\n`;
+        } else {
+            response += `**Tech Nation Application Process:**\n\n`;
+        }
         
         if (processInfo.length > 0) {
-            response += `Based on the Tech Nation guidance:\n\n`;
+            response += isChinese ? `根据Tech Nation指南：\n\n` : `Based on the Tech Nation guidance:\n\n`;
             processInfo.forEach((info, index) => {
                 response += `• ${info.trim()}\n`;
             });
         } else {
-            response += `**Step 1: Check Eligibility**
-• Must have at least 5 years experience in digital technology
-• Choose between "Exceptional Talent" or "Exceptional Promise" route
+            if (isChinese) {
+                response += `**步骤1：Tech Nation背书申请**
+• 费用：£561
+• 处理时间：8-12周（标准），2-3周（加急服务额外收费）
+• 在线申请通过Tech Nation门户
 
-**Step 2: Prepare Evidence Portfolio**
-• Gather 10 pieces of evidence across 4 criteria
-• Focus on external recognition and quantifiable impact
+**步骤2：内政部签证申请**
+• 费用：£205
+• 处理时间：3周（英国境外），8周（英国境内）
+• 需要额外文件和生物识别
 
-**Step 3: Get Recommendation Letters**
-• Secure 3 letters from established leaders in digital technology
-• Letters must demonstrate knowledge of your work
+**费用明细：**
+• Tech Nation背书：£561
+• 签证申请费：£205
+• 医疗附加费：£1,035/年
+• **总计：£766 + £1,035/年（医疗）**
 
-**Step 4: Submit Application**
-• Online application through Tech Nation portal
-• Application fee: £456
-• Processing time: 8-12 weeks typically
+**完整流程：**
+1. 准备证据档案（2-6个月）
+2. 获得推荐信（3封）
+3. 提交Tech Nation申请（£561）
+4. 等待背书决定（8-12周）
+5. 申请实际签证（£205）
+6. 生物识别预约
+7. 收到签证决定
 
-**Step 5: Visa Application**
-• If endorsed, apply for the actual Global Talent visa
-• Additional fee and documentation required`;
+**签证有效期：**
+• 最长5年有效期
+• 可无限次续签
+• 3-5年后可申请永居`;
+            } else {
+                response += `**Step 1: Tech Nation Endorsement Application**
+• Cost: £561
+• Processing: 8-12 weeks (standard), faster service available for extra cost
+• Online application via Tech Nation portal
+
+**Step 2: Home Office Visa Application**
+• Cost: £205
+• Processing: 3 weeks (outside UK), 8 weeks (inside UK)
+• Additional documents and biometric appointment required
+
+**Cost Breakdown:**
+• Tech Nation endorsement: £561
+• Visa application fee: £205
+• Healthcare surcharge: £1,035 per year
+• **Total: £766 + £1,035/year (healthcare)**
+
+**Complete Process:**
+1. Prepare evidence portfolio (2-6 months)
+2. Secure recommendation letters (3 letters)
+3. Submit Tech Nation application (£561)
+4. Wait for endorsement decision (8-12 weeks)
+5. Apply for actual visa (£205)
+6. Biometric appointment
+7. Receive visa decision
+
+**Visa Duration:**
+• Up to 5 years validity
+• No limit on renewals
+• Eligible for settlement after 3-5 years`;
+            }
         }
         
-        response += `\n\n**Follow-up Questions:**
-• What stage are you currently at in this process?
-• Do you need help with any specific step?
-• Would you like guidance on preparing evidence?`;
+        response += isChinese ? 
+            `\n\n**重要提示：**
+• 两个阶段分别收费：£561 + £205
+• 医疗附加费每年£1,035（必须）
+• 家属需要单独支付相同费用
+
+**后续问题：**
+• 您需要了解医疗附加费详情吗？
+• 想知道家属申请要求吗？
+• 需要证据准备指导吗？` :
+            `\n\n**Important Notes:**
+• Two-stage payment: £561 + £205
+• Healthcare surcharge £1,035/year (mandatory)
+• Dependants pay same fees separately
+
+**Follow-up Questions:**
+• Need details about healthcare surcharge?
+• Want to know about dependant applications?
+• Need guidance on evidence preparation?`;
         
         return response;
     }
     
-    if (query.includes('evidence') || query.includes('document') || query.includes('portfolio')) {
-        const evidenceInfo = contextLines.filter(line => 
-            line.toLowerCase().includes('evidence') || 
-            line.toLowerCase().includes('criteria') || 
-            line.toLowerCase().includes('portfolio') ||
-            line.toLowerCase().includes('document') ||
-            line.toLowerCase().includes('proof')
-        ).slice(0, 10);
+    if (query.includes('evidence') || query.includes('document') || query.includes('portfolio') ||
+        query.includes('证据') || query.includes('文件') || query.includes('档案')) {
         
-        let response = `**Evidence Requirements for Tech Nation Application:**\n\n`;
+        let response = isChinese ? 
+            `**Tech Nation申请的证据要求：**\n\n` :
+            `**Evidence Requirements for Tech Nation Application:**\n\n`;
         
-        if (evidenceInfo.length > 0) {
-            response += `From the Tech Nation guidance:\n\n`;
-            evidenceInfo.forEach(info => {
-                response += `• ${info.trim()}\n`;
-            });
-        }
-        
-        response += `\n\n**Key Evidence Categories:**
+        if (isChinese) {
+            response += `**主要证据类别：**
+
+**1. 职业外的认可**
+• 主要出版物的媒体报道
+• 重要会议发言
+• 行业奖项或荣誉
+• 顾问角色
+
+**2. 技术专长**
+• 有影响力的开源贡献
+• 技术出版物或专利
+• 专家同行的认可
+
+**3. 学术/商业成功**
+• 有引用的研究
+• 有指标的产品发布
+• 收入增长成就
+
+**4. 数字技术创新**
+• 新技术或方法
+• 重大技术改进
+• 技术转型领导
+
+**专业建议：**
+• 最多10项证据
+• 质量胜过数量
+• 包含可量化指标
+• 显示外部认可
+
+**后续问题：**
+• 您目前有什么类型的证据？
+• 您认为自己在哪个标准上最强？
+• 需要加强任何特定领域的帮助吗？`;
+        } else {
+            response += `**Key Evidence Categories:**
 
 **1. Recognition Outside Immediate Occupation**
 • Media coverage in major publications
@@ -276,116 +374,17 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 • What type of evidence do you currently have?
 • Which criteria do you think you're strongest in?
 • Need help strengthening any particular area?`;
-        
-        return response;
-    }
-    
-    if (query.includes('eligibility') || query.includes('requirement') || query.includes('qualify')) {
-        let response = `**Eligibility Requirements for Tech Nation Digital Technology Route:**\n\n`;
-        
-        const eligibilityInfo = contextLines.filter(line => 
-            line.toLowerCase().includes('eligibility') || 
-            line.toLowerCase().includes('requirement') || 
-            line.toLowerCase().includes('must') ||
-            line.toLowerCase().includes('need') ||
-            line.toLowerCase().includes('criteria')
-        ).slice(0, 8);
-        
-        if (eligibilityInfo.length > 0) {
-            response += `From the guidance:\n\n`;
-            eligibilityInfo.forEach(info => {
-                response += `• ${info.trim()}\n`;
-            });
         }
         
-        response += `\n\n**Basic Requirements:**
-• Minimum 5 years experience in digital technology field
-• Must demonstrate exceptional talent or exceptional promise
-• Work must be in digital technology (not just using technology)
-
-**Four Evidence Criteria (need at least 2 of 4):**
-1. **Recognition** - Awards, media coverage, speaking engagements
-2. **Expertise** - Technical contributions, publications, patents
-3. **Academic/Commercial Success** - Research impact, business results
-4. **Innovation** - New technologies, methodologies, applications
-
-**Application Routes:**
-• **Exceptional Talent**: Proven track record of excellence
-• **Exceptional Promise**: Potential for significant future contribution
-
-**Key Success Factors:**
-• External recognition beyond your employer
-• Quantifiable impact and achievements
-• Strong recommendation letters
-• Compelling personal statement`;
-        
-        if (userProfile) {
-            response += `\n\n**Your Profile Assessment:**`;
-            if (userProfile.experience) {
-                response += `\n• Experience: ${userProfile.experience} - `;
-                if (userProfile.experience === '0-2') {
-                    response += `Focus on "Exceptional Promise" route`;
-                } else if (userProfile.experience === '3-5') {
-                    response += `Good for "Exceptional Promise", possible for "Exceptional Talent"`;
-                } else {
-                    response += `Strong candidate for "Exceptional Talent"`;
-                }
-            }
-            if (userProfile.role) {
-                response += `\n• Role: ${userProfile.role} - Tailor evidence to show external impact`;
-            }
-        }
-        
-        response += `\n\n**Follow-up Questions:**
-• What's your experience level in digital technology?
-• Do you have external recognition in your field?
-• Which evidence criteria do you think you can meet?`;
-        
         return response;
     }
     
-    if (query.includes('timeline') || query.includes('time') || query.includes('long')) {
-        let response = `**Tech Nation Application Timeline:**\n\n`;
-        
-        response += `**Preparation Phase: 2-6 months**
-• Gathering evidence and documentation
-• Securing recommendation letters
-• Writing personal statement
-• Organizing portfolio
-
-**Tech Nation Review: 8-12 weeks**
-• Standard processing time
-• Rush service available (2-3 weeks, £500 extra)
-• Decision notification via email
-
-**Home Office Visa Stage: 3-8 weeks**
-• After Tech Nation endorsement
-• Additional documentation required
-• Priority services available
-
-**Total Timeline: 4-8 months**
-• Can be shorter with rush services
-• Longer if additional evidence needed
-• Planning is crucial for success
-
-**Timeline Tips:**
-• Start evidence collection early
-• Book rush services if time-sensitive
-• Have contingency plans
-• Consider professional review
-
-**Follow-up Questions:**
-• When are you planning to apply?
-• Do you need to use priority services?
-• What stage are you currently at?`;
-        
-        return response;
-    }
+    // Default fallback with language support
+    let response = isChannel ? 
+        `根据提供的Tech Nation指南：\n\n` :
+        `Based on the Tech Nation guidance provided:\n\n`;
     
-    // Default response with context analysis
-    let response = `Based on the Tech Nation guidance provided:\n\n`;
-    
-    // Try to find the most relevant lines from context
+    // Try to find relevant lines from context
     const relevantLines = contextLines.filter(line => {
         const lineLower = line.toLowerCase();
         return query.split(' ').some(word => 
@@ -400,7 +399,17 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
         response += `\n`;
     }
     
-    response += `I found this information related to your question. For more specific guidance, please ask about:
+    if (isChinese) {
+        response += `我找到了与您问题相关的信息。如需更具体的指导，请询问：
+
+• **申请流程** - 步骤和要求
+• **证据要求** - 您需要什么文件
+• **资格标准** - 谁有资格获得签证
+• **时间安排** - 流程需要多长时间
+
+**您想让我详细说明这些领域中的任何一个吗？**`;
+    } else {
+        response += `I found this information related to your question. For more specific guidance, please ask about:
 
 • **Application Process** - Steps and requirements
 • **Evidence Requirements** - What documentation you need
@@ -408,6 +417,15 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 • **Timeline** - How long the process takes
 
 **Would you like me to elaborate on any of these areas?**`;
+    } about:
+
+• **Application Process** - Steps and requirements
+• **Evidence Requirements** - What documentation you need
+• **Eligibility Criteria** - Who qualifies for the visa
+• **Timeline** - How long the process takes
+
+**Would you like me to elaborate on any of these areas?**`;
+    }
     
     return response;
 }
@@ -415,7 +433,7 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 // Get user-uploaded resume content from KV store
 async function getResumeContent(userId) {
     try {
-        if (!userId || !process.env.UPSTASH_REDIS_URL) {
+        if (!userId || !kv) {
             return null;
         }
         
