@@ -37,6 +37,36 @@ export default function handler(req, res) {
             padding: 20px;
             text-align: center;
             font-weight: 600;
+            position: relative;
+        }
+        
+        .language-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .language-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .language-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+        
+        .language-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
         
         .chat {
@@ -230,8 +260,12 @@ export default function handler(req, res) {
 <body>
     <div class="container">
         <div class="header">
-            🇬🇧 UK Global Talent Visa Assistant
-            <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Digital Technology Route - Tech Nation</div>
+            <div class="language-toggle">
+                <button class="language-btn active" onclick="bot.switchLanguage('en')" id="lang-en">EN</button>
+                <button class="language-btn" onclick="bot.switchLanguage('zh')" id="lang-zh">中文</button>
+            </div>
+            <div id="header-title">🇬🇧 UK Global Talent Visa Assistant</div>
+            <div id="header-subtitle" style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Digital Technology Route - Tech Nation</div>
         </div>
         
         <div id="chat" class="chat">
@@ -265,8 +299,85 @@ export default function handler(req, res) {
                 this.currentStep = 'welcome';
                 this.userProfile = {};
                 this.isLoading = false;
+                this.currentLanguage = 'en'; // Default to English
+                
+                // Language text configurations
+                this.texts = {
+                    en: {
+                        headerTitle: '🇬🇧 UK Global Talent Visa Assistant',
+                        headerSubtitle: 'Digital Technology Route - Tech Nation',
+                        welcome: '👋 Welcome! I will guide you through the UK Global Talent Visa application for Digital Technology.',
+                        visaInfo: 'ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. It offers flexibility, a pathway to settlement, and freedom to change jobs or be self-employed. Disclaimer: This is general guidance, not legal advice. For formal immigration advice, please speak with an OISC-registered adviser or solicitor.',
+                        startTopics: 'Let us start with some quick topics. What would you like to know about first?',
+                        eligibility: '📋 Eligibility',
+                        process: '🚀 Process',
+                        documents: '📄 Documents',
+                        timeline: '⏰ Timeline',
+                        startAssessment: '✨ Start Assessment',
+                        assessmentStart: 'Let us assess your profile for the Tech Nation application! 🎯',
+                        experienceQuestion: 'How many years of experience do you have in digital technology?',
+                        roleQuestion: 'What is your primary role in digital technology?',
+                        technical: '👩‍💻 Technical',
+                        business: '💼 Business',
+                        leadership: '🎯 Leadership',
+                        inputPlaceholder: 'Type your response...',
+                        inputPlaceholderFree: 'Ask me anything about Tech Nation application...',
+                        send: 'Send',
+                        uploadResume: '📄 Upload Resume (PDF)',
+                        thinking: 'Thinking...',
+                        finalMessage: 'Great! Now you can ask me any specific questions about the Tech Nation application process. I will use the official guidance to help you! 💬'
+                    },
+                    zh: {
+                        headerTitle: '🇬🇧 英国全球人才签证助手',
+                        headerSubtitle: '数字技术路径 - Tech Nation',
+                        welcome: '👋 欢迎！我将指导您完成英国全球人才签证数字技术路径的申请。',
+                        visaInfo: 'ℹ️ **关于英国全球人才签证：** 该签证允许数字技术领域的高技能人才在英国生活和工作，无需雇主担保，同时为其家属提供完整的工作和学习权利。它提供灵活性、定居途径以及换工作或自雇的自由. 免责声明： 本聊天机器人提供的是一般性指导信息，并非法律意见。如需正式的移民法律建议，请咨询经 OISC 注册的顾问或合格律师。',
+                        startTopics: '让我们从一些快速话题开始。您想首先了解什么？',
+                        eligibility: '📋 资格要求',
+                        process: '🚀 申请流程',
+                        documents: '📄 所需文件',
+                        timeline: '⏰ 时间安排',
+                        startAssessment: '✨ 开始评估',
+                        assessmentStart: '让我们评估您的Tech Nation申请档案！🎯',
+                        experienceQuestion: '您在数字技术领域有多少年经验？',
+                        roleQuestion: '您在数字技术领域的主要角色是什么？',
+                        technical: '👩‍💻 技术岗位',
+                        business: '💼 商务岗位',
+                        leadership: '🎯 领导岗位',
+                        inputPlaceholder: '输入您的回复...',
+                        inputPlaceholderFree: '询问任何关于Tech Nation申请的问题...',
+                        send: '发送',
+                        uploadResume: '📄 上传简历 (PDF)',
+                        thinking: '思考中...',
+                        finalMessage: '很好！现在您可以询问任何关于Tech Nation申请流程的具体问题。我将使用官方指南来帮助您！💬'
+                    }
+                };
                 
                 this.init();
+            }
+            
+            switchLanguage(lang) {
+                this.currentLanguage = lang;
+                
+                // Update UI elements
+                document.getElementById('header-title').textContent = this.texts[lang].headerTitle;
+                document.getElementById('header-subtitle').textContent = this.texts[lang].headerSubtitle;
+                document.getElementById('messageInput').placeholder = this.currentStep === 'free' 
+                    ? this.texts[lang].inputPlaceholderFree 
+                    : this.texts[lang].inputPlaceholder;
+                document.getElementById('sendBtn').textContent = this.texts[lang].send;
+                document.getElementById('uploadBtn').textContent = this.texts[lang].uploadResume;
+                
+                // Update active language button
+                document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+                document.getElementById('lang-zh').classList.toggle('active', lang === 'zh');
+                
+                // Clear chat and restart workflow in new language
+                this.chat.innerHTML = '';
+                this.currentStep = 'welcome';
+                this.userProfile = {};
+                
+                setTimeout(() => this.startWorkflow(), 500);
             }
             
             init() {
@@ -285,25 +396,27 @@ export default function handler(req, res) {
             }
             
             startWorkflow() {
-                this.addMessage('👋 Welcome! I will guide you through the UK Global Talent Visa application for Digital Technology.', 'bot');
+                const t = this.texts[this.currentLanguage];
+                this.addMessage(t.welcome, 'bot');
                 
                 setTimeout(() => {
-                    this.addMessage('ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. It offers flexibility, a pathway to settlement, and freedom to change jobs or be self-employed.', 'bot');
+                    this.addMessage(t.visaInfo, 'bot');
                 }, 1500);
                 
                 setTimeout(() => {
-                    this.addMessage('Let us start with some quick topics. What would you like to know about first?', 'bot');
+                    this.addMessage(t.startTopics, 'bot');
                     this.showInitialOptions();
                 }, 3000);
             }
             
             showInitialOptions() {
+                const t = this.texts[this.currentLanguage];
                 const buttonsHtml = '<div class="button-group">' +
-                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'eligibility\\')">📋 Eligibility</button>' +
-                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'process\\')">🚀 Process</button>' +
-                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'documents\\')">📄 Documents</button>' +
-                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'timeline\\')">⏰ Timeline</button>' +
-                    '<button class="workflow-button" onclick="bot.startAssessment()">✨ Start Assessment</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'eligibility\\')">' + t.eligibility + '</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'process\\')">' + t.process + '</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'documents\\')">' + t.documents + '</button>' +
+                    '<button class="guide-button" onclick="bot.handleTopicChoice(\\'timeline\\')">' + t.timeline + '</button>' +
+                    '<button class="workflow-button" onclick="bot.startAssessment()">' + t.startAssessment + '</button>' +
                     '</div>';
                 
                 const buttonMessage = document.createElement('div');
@@ -315,21 +428,35 @@ export default function handler(req, res) {
             
             async handleTopicChoice(topic) {
                 const topicQuestions = {
-                    'eligibility': 'What are the eligibility requirements for the Digital Technology route?',
-                    'process': 'How does the Tech Nation application process work?',
-                    'documents': 'What documents and evidence do I need to prepare?',
-                    'timeline': 'How long does the entire process take?'
+                    en: {
+                        'eligibility': 'What are the eligibility requirements for the Digital Technology route?',
+                        'process': 'How does the Tech Nation application process work?',
+                        'documents': 'What documents and evidence do I need to prepare?',
+                        'timeline': 'How long does the entire process take?'
+                    },
+                    zh: {
+                        'eligibility': '数字技术路径的资格要求是什么？',
+                        'process': 'Tech Nation申请流程是如何运作的？',
+                        'documents': '我需要准备哪些文件和证据？',
+                        'timeline': '整个流程需要多长时间？'
+                    }
                 };
                 
-                const question = topicQuestions[topic];
+                const question = topicQuestions[this.currentLanguage][topic];
                 this.addMessage(question, 'user');
                 await this.sendToAPI(question);
                 
                 setTimeout(() => {
-                    this.addMessage('Would you like a personalized assessment of your profile?', 'bot');
+                    const followUpText = this.currentLanguage === 'en' ? 
+                        'Would you like a personalized assessment of your profile?' :
+                        '您想要对您的档案进行个性化评估吗？';
+                    const yesText = this.currentLanguage === 'en' ? 'Yes, assess my profile' : '是的，评估我的档案';
+                    const anotherText = this.currentLanguage === 'en' ? 'Ask another question' : '问另一个问题';
+                    
+                    this.addMessage(followUpText, 'bot');
                     const buttonHtml = '<div class="button-group">' +
-                        '<button class="workflow-button" onclick="bot.startAssessment()">Yes, assess my profile</button>' +
-                        '<button class="guide-button" onclick="bot.showInitialOptions()">Ask another question</button>' +
+                        '<button class="workflow-button" onclick="bot.startAssessment()">' + yesText + '</button>' +
+                        '<button class="guide-button" onclick="bot.showInitialOptions()">' + anotherText + '</button>' +
                         '</div>';
                     
                     const buttonMessage = document.createElement('div');
@@ -341,22 +468,29 @@ export default function handler(req, res) {
             }
             
             startAssessment() {
+                const t = this.texts[this.currentLanguage];
+                const stepText = this.currentLanguage === 'en' ? 'Step 1/5: Experience' : '步骤 1/5：经验';
+                
                 this.currentStep = 'experience';
-                this.addProgressIndicator('Step 1/5: Experience');
-                this.addMessage('Let us assess your profile for the Tech Nation application! 🎯', 'bot');
+                this.addProgressIndicator(stepText);
+                this.addMessage(t.assessmentStart, 'bot');
                 
                 setTimeout(() => {
-                    this.addMessage('How many years of experience do you have in digital technology?', 'bot');
+                    this.addMessage(t.experienceQuestion, 'bot');
                     this.showExperienceOptions();
                 }, 1000);
             }
             
             showExperienceOptions() {
+                const yearTexts = this.currentLanguage === 'en' ? 
+                    ['0-2 years', '3-5 years', '6-10 years', '10+ years'] :
+                    ['0-2年', '3-5年', '6-10年', '10年以上'];
+                
                 const buttonsHtml = '<div class="button-group">' +
-                    '<button class="workflow-button" onclick="bot.selectExperience(\\'0-2\\')">0-2 years</button>' +
-                    '<button class="workflow-button" onclick="bot.selectExperience(\\'3-5\\')">3-5 years</button>' +
-                    '<button class="workflow-button" onclick="bot.selectExperience(\\'6-10\\')">6-10 years</button>' +
-                    '<button class="workflow-button" onclick="bot.selectExperience(\\'10+\\')">10+ years</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\\'0-2\\')">' + yearTexts[0] + '</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\\'3-5\\')">' + yearTexts[1] + '</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\\'6-10\\')">' + yearTexts[2] + '</button>' +
+                    '<button class="workflow-button" onclick="bot.selectExperience(\\'10+\\')">' + yearTexts[3] + '</button>' +
                     '</div>';
                 
                 const buttonMessage = document.createElement('div');
@@ -368,22 +502,28 @@ export default function handler(req, res) {
             
             selectExperience(experience) {
                 this.userProfile.experience = experience;
-                this.addMessage('I have ' + experience + ' years of experience', 'user');
+                const responseText = this.currentLanguage === 'en' ? 
+                    'I have ' + experience + ' years of experience' :
+                    '我有' + (experience === '10+' ? '10年以上' : experience + '年') + '的经验';
+                this.addMessage(responseText, 'user');
                 
+                const stepText = this.currentLanguage === 'en' ? 'Step 2/5: Role' : '步骤 2/5：角色';
                 this.currentStep = 'role';
-                this.addProgressIndicator('Step 2/5: Role');
+                this.addProgressIndicator(stepText);
                 
                 setTimeout(() => {
-                    this.addMessage('What is your primary role in digital technology?', 'bot');
+                    const t = this.texts[this.currentLanguage];
+                    this.addMessage(t.roleQuestion, 'bot');
                     this.showRoleOptions();
                 }, 1000);
             }
             
             showRoleOptions() {
+                const t = this.texts[this.currentLanguage];
                 const buttonsHtml = '<div class="button-group">' +
-                    '<button class="workflow-button" onclick="bot.selectRole(\\'technical\\')">👩‍💻 Technical</button>' +
-                    '<button class="workflow-button" onclick="bot.selectRole(\\'business\\')">💼 Business</button>' +
-                    '<button class="workflow-button" onclick="bot.selectRole(\\'leadership\\')">🎯 Leadership</button>' +
+                    '<button class="workflow-button" onclick="bot.selectRole(\\'technical\\')">' + t.technical + '</button>' +
+                    '<button class="workflow-button" onclick="bot.selectRole(\\'business\\')">' + t.business + '</button>' +
+                    '<button class="workflow-button" onclick="bot.selectRole(\\'leadership\\')">' + t.leadership + '</button>' +
                     '</div>';
                 
                 const buttonMessage = document.createElement('div');
@@ -395,10 +535,18 @@ export default function handler(req, res) {
             
             selectRole(role) {
                 this.userProfile.role = role;
-                this.addMessage('My role is: ' + role, 'user');
+                const roleTexts = {
+                    en: { technical: 'Technical', business: 'Business', leadership: 'Leadership' },
+                    zh: { technical: '技术岗位', business: '商务岗位', leadership: '领导岗位' }
+                };
+                const responseText = this.currentLanguage === 'en' ? 
+                    'My role is: ' + roleTexts.en[role] :
+                    '我的角色是：' + roleTexts.zh[role];
+                this.addMessage(responseText, 'user');
                 
+                const stepText = this.currentLanguage === 'en' ? 'Step 3/3: Analysis' : '步骤 3/3：分析';
                 this.currentStep = 'analysis';
-                this.addProgressIndicator('Step 3/3: Analysis');
+                this.addProgressIndicator(stepText);
                 
                 setTimeout(() => {
                     this.generateSimpleFeedback();
@@ -406,21 +554,36 @@ export default function handler(req, res) {
             }
             
             generateSimpleFeedback() {
-                let feedback = '📊 **Your Tech Nation Assessment:**\\n\\n';
+                let feedback = this.currentLanguage === 'en' ? 
+                    '📊 **Your Tech Nation Assessment:**\\n\\n' :
+                    '📊 **您的Tech Nation评估：**\\n\\n';
                 
                 const expYears = this.userProfile.experience;
-                if (expYears === '0-2') {
-                    feedback += '⚠️ **Experience:** Focus on "Exceptional Promise" route\\n';
-                } else if (expYears === '3-5') {
-                    feedback += '✅ **Experience:** Good for "Exceptional Promise"\\n';
+                if (this.currentLanguage === 'en') {
+                    if (expYears === '0-2') {
+                        feedback += '⚠️ **Experience:** Focus on "Exceptional Promise" route\\n';
+                    } else if (expYears === '3-5') {
+                        feedback += '✅ **Experience:** Good for "Exceptional Promise"\\n';
+                    } else {
+                        feedback += '✅ **Experience:** Strong for "Exceptional Talent"\\n';
+                    }
+                    feedback += '\\n🎯 **Next Steps:**\\n';
+                    feedback += '• Gather evidence across 4 criteria\\n';
+                    feedback += '• Get 3 recommendation letters\\n';
+                    feedback += '• Prepare detailed portfolio\\n';
                 } else {
-                    feedback += '✅ **Experience:** Strong for "Exceptional Talent"\\n';
+                    if (expYears === '0-2') {
+                        feedback += '⚠️ **经验：** 专注于"杰出潜力"路径\\n';
+                    } else if (expYears === '3-5') {
+                        feedback += '✅ **经验：** 适合"杰出潜力"路径\\n';
+                    } else {
+                        feedback += '✅ **经验：** 非常适合"杰出人才"路径\\n';
+                    }
+                    feedback += '\\n🎯 **下一步：**\\n';
+                    feedback += '• 收集4个标准的证据\\n';
+                    feedback += '• 获得3封推荐信\\n';
+                    feedback += '• 准备详细档案\\n';
                 }
-                
-                feedback += '\\n🎯 **Next Steps:**\\n';
-                feedback += '• Gather evidence across 4 criteria\\n';
-                feedback += '• Get 3 recommendation letters\\n';
-                feedback += '• Prepare detailed portfolio\\n';
                 
                 this.addMessage(feedback, 'bot');
                 
@@ -430,13 +593,14 @@ export default function handler(req, res) {
             }
             
             enableFreeChat() {
+                const t = this.texts[this.currentLanguage];
                 this.currentStep = 'free';
                 this.messageInput.disabled = false;
                 this.sendBtn.disabled = false;
-                this.messageInput.placeholder = 'Ask me anything about Tech Nation application...';
+                this.messageInput.placeholder = t.inputPlaceholderFree;
                 this.messageInput.focus();
                 
-                this.addMessage('Great! Now you can ask me any specific questions about the Tech Nation application process. I will use the official guidance to help you! 💬', 'bot');
+                this.addMessage(t.finalMessage, 'bot');
             }
             
             async handleFileUpload(e) {
@@ -473,7 +637,48 @@ export default function handler(req, res) {
                 if (this.isLoading) return;
                 
                 this.isLoading = true;
-                const typingElement = this.addMessage('Thinking...', 'typing');
+                const t = this.texts[this.currentLanguage];
+                const typingElement = this.addMessage(t.thinking, 'typing');
+                
+                try {
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: message,
+                            userId: this.getUserId(),
+                            userProfile: this.userProfile,
+                            language: this.currentLanguage // Send language preference
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    this.chat.removeChild(typingElement);
+                    
+                    if (data.response) {
+                        this.addMessage(data.response, 'bot');
+                    } else {
+                        const errorMsg = this.currentLanguage === 'en' ? 
+                            'Sorry, I encountered an error. Please try again.' :
+                            '抱歉，我遇到了错误。请重试。';
+                        this.addMessage(errorMsg, 'bot');
+                    }
+                    
+                } catch (error) {
+                    console.error('API Error:', error);
+                    this.chat.removeChild(typingElement);
+                    const errorMsg = this.currentLanguage === 'en' ? 
+                        'I apologize, but I encountered an error. Please try again.' :
+                        '很抱歉，我遇到了错误。请重试。';
+                    this.addMessage(errorMsg, 'bot');
+                } finally {
+                    this.isLoading = false;
+                    if (this.currentStep === 'free') {
+                        this.messageInput.disabled = false;
+                        this.sendBtn.disabled = false;
+                    }
+                }
+            }
                 
                 try {
                     const response = await fetch('/api/chat', {
