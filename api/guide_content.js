@@ -113,8 +113,8 @@ APPLICATION PROCESS
 
 COSTS
 
-- Endorsement fee: £524-£1,096 (varies by body)
-- Visa application fee: £623
+- Endorsement fee: £561 
+- Visa application fee post endorsement: £205
 - Immigration Health Surcharge: £624 per year
 - Priority service: additional £500-£1,000
 
