@@ -331,7 +331,7 @@ export default function handler(req, res) {
                         headerTitle: '🇬🇧 英国全球人才签证助手',
                         headerSubtitle: '数字技术路径 - Tech Nation',
                         welcome: '👋 欢迎！我将指导您完成英国全球人才签证数字技术路径的申请。',
-                        visaInfo: 'ℹ️ **关于英国全球人才签证：** 该签证允许数字技术领域的高技能人才在英国生活和工作，无需雇主担保，同时为其家属提供完整的工作和学习权利。它提供灵活性、定居途径以及换工作或自雇的自由. 免责声明： 本聊天机器人提供的是一般性指导信息，并非法律意见。如需正式的移民法律建议，请咨询经 OISC 注册的顾问或合格律师。',
+                        visaInfo: 'ℹ️ **关于英国全球人才签证：** 该签证允许数字技术领域的高技能人才在英国生活和工作，无需雇主担保，同时为其家属提供完整的工作和学习权利。它提供灵活性、定居途径以及换工作或自雇的自由。',
                         startTopics: '让我们从一些快速话题开始。您想首先了解什么？',
                         eligibility: '📋 资格要求',
                         process: '🚀 申请流程',
@@ -671,39 +671,6 @@ export default function handler(req, res) {
                         'I apologize, but I encountered an error. Please try again.' :
                         '很抱歉，我遇到了错误。请重试。';
                     this.addMessage(errorMsg, 'bot');
-                } finally {
-                    this.isLoading = false;
-                    if (this.currentStep === 'free') {
-                        this.messageInput.disabled = false;
-                        this.sendBtn.disabled = false;
-                    }
-                }
-            }
-                
-                try {
-                    const response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            message: message,
-                            userId: this.getUserId(),
-                            userProfile: this.userProfile
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    this.chat.removeChild(typingElement);
-                    
-                    if (data.response) {
-                        this.addMessage(data.response, 'bot');
-                    } else {
-                        this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
-                    }
-                    
-                } catch (error) {
-                    console.error('API Error:', error);
-                    this.chat.removeChild(typingElement);
-                    this.addMessage('I apologize, but I encountered an error. Please try again.', 'bot');
                 } finally {
                     this.isLoading = false;
                     if (this.currentStep === 'free') {
