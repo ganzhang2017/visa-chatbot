@@ -116,72 +116,6 @@ function getContextTerms(query) {
     return [];
 }
 
-// FREE API alternatives - no API key needed!
-async function callFreeAI(prompt, context, userProfile = null) {
-    try {
-        console.log('Using FREE AI APIs...');
-        
-        const systemPrompt = `You are an expert UK Global Talent Visa consultant specializing in the Digital Technology route through Tech Nation.
-
-CRITICAL INSTRUCTIONS:
-- Answer ONLY based on the provided Tech Nation guidance context
-- Provide comprehensive, well-structured responses (aim for 400-600 words)
-- Use bullet points, numbered lists, and clear sections for readability  
-- Include specific details, requirements, and examples from the context
-- If the user has uploaded a resume and asks about their profile, reference their background
-- Always end with 2-3 relevant follow-up questions to guide them further
-- Be encouraging but realistic about their chances
-- Focus exclusively on Digital Technology route, not other Global Talent categories
-
-RESPONSE STRUCTURE:
-1. Direct answer to their question
-2. Relevant details and requirements
-3. Practical tips or examples
-4. Follow-up questions
-
-If information isn't in the context, say "This specific detail isn't covered in the Tech Nation guidance I have access to, but based on the general process..."`;
-
-        // Multiple free API options to try
-        const freeAPIs = [
-            {
-                name: 'Hugging Face',
-                url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: {
-                    inputs: `${systemPrompt}\n\nContext: ${context.substring(0, 1500)}\n\nUser: ${prompt}\n\nAssistant:`
-                }
-            },
-            {
-                name: 'Groq Free',
-                url: 'https://api.groq.com/openai/v1/chat/completions',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer gsk_no_key_needed_for_free_tier'
-                },
-                body: {
-                    model: 'llama3-8b-8192',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: `Context: ${context}\n\nUser Profile: ${userProfile ? JSON.stringify(userProfile) : 'None'}\n\nQuestion: ${prompt}` }
-                    ],
-                    max_tokens: 800,
-                    temperature: 0.4
-                }
-            }
-        ];
-
-        // If no free APIs work, use our intelligent fallback
-        console.log('Free APIs may have limitations, using intelligent fallback...');
-        return getIntelligentFallback(prompt, context, userProfile);
-        
-    } catch (error) {
-        console.error('Free AI failed, using fallback:', error);
-        return getIntelligentFallback(prompt, context, userProfile);
-    }
-}
-
 // Intelligent fallback that analyzes the context and provides detailed responses
 function getIntelligentFallback(prompt, context, userProfile = null) {
     const query = prompt.toLowerCase();
@@ -189,6 +123,8 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
     
     // Extract relevant information from context based on query
     const contextLines = context.split('\n').filter(line => line.trim().length > 20);
+    
+    let response = '';
     
     if (query.includes('process') || query.includes('how') || query.includes('steps') || 
         query.includes('流程') || query.includes('如何') || query.includes('步骤')) {
@@ -227,8 +163,11 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 **费用明细：**
 • Tech Nation背书：£561
 • 签证申请费：£205
-• 医疗附加费：£1,035/年
-• **总计：£766 + £1,035/年（医疗）**
+• **总计：£766**
+
+**额外费用：**
+• 医疗附加费：每年£1,035
+• 如果您在申请中包括您的伴侣或子女，他们每人需要支付£766
 
 **完整流程：**
 1. 准备证据档案（2-6个月）
@@ -257,8 +196,11 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 **Cost Breakdown:**
 • Tech Nation endorsement: £561
 • Visa application fee: £205
+• **Total: £766**
+
+**Additional Costs:**
 • Healthcare surcharge: £1,035 per year
-• **Total: £766 + £1,035/year (healthcare)**
+• If you're including your partner or children in your application, they'll each need to pay £766
 
 **Complete Process:**
 1. Prepare evidence portfolio (2-6 months)
@@ -380,7 +322,7 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
     }
     
     // Default fallback with language support
-    let response = isChannel ? 
+    response = isChinese ? 
         `根据提供的Tech Nation指南：\n\n` :
         `Based on the Tech Nation guidance provided:\n\n`;
     
@@ -410,14 +352,6 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 **您想让我详细说明这些领域中的任何一个吗？**`;
     } else {
         response += `I found this information related to your question. For more specific guidance, please ask about:
-
-• **Application Process** - Steps and requirements
-• **Evidence Requirements** - What documentation you need
-• **Eligibility Criteria** - Who qualifies for the visa
-• **Timeline** - How long the process takes
-
-**Would you like me to elaborate on any of these areas?**`;
-    } about:
 
 • **Application Process** - Steps and requirements
 • **Evidence Requirements** - What documentation you need
@@ -488,10 +422,11 @@ export default async function handler(req, res) {
 
         // Handle test connection
         if (message === 'test connection') {
-            return res.status(200).json({ response: 'API connection successful! Using FREE backup system 🚀' });
+            return res.status(200).json({ response: 'API connection successful! Using intelligent fallback system 🚀' });
         }
 
         console.log('Processing message:', message.substring(0, 100));
+        console.log('User profile language:', userProfile?.language);
 
         // Get guide content (Tech Nation guidance)
         let guideContent;
@@ -542,7 +477,7 @@ export default async function handler(req, res) {
         }
 
         // Store conversation in KV (non-blocking)
-        if (userId && process.env.UPSTASH_REDIS_URL) {
+        if (userId && kv) {
             try {
                 await kv.set(`chat:${userId}`, JSON.stringify({ 
                     lastMessage: message, 
@@ -591,7 +526,7 @@ OPTIONAL CRITERIA (must meet at least 2 of 4)
 
 APPLICATION PROCESS
 Stage 1: Tech Nation Endorsement (£561 fee)
-Stage 2: Home Office Visa Application (separate fees £205 and timeline)
+Stage 2: Home Office Visa Application (£205 fee + £1,035/year healthcare surcharge)
 
 EVIDENCE PORTFOLIO
 • Maximum 10 pieces of evidence
@@ -607,9 +542,38 @@ RECOMMENDATION LETTERS
 
 TIMELINE EXPECTATIONS
 • Evidence preparation: 2-6 months
-• 3 weeks, if you’re outside the UK
-  8 weeks, if you’re inside the UK
-You may be able to pay to get a faster decision.
+• Tech Nation decision: 8-12 weeks
+• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)
+• You may be able to pay to get a faster decision
 
+COSTS
+• Tech Nation endorsement: £561
+• Visa application: £205
+• Healthcare surcharge: £1,035 per year
+• If you're including your partner or children in your application, they'll each need to pay £766
+`;
+}
 
+// Basic fallback responses for common questions
+function getFallbackResponse(message, userProfile) {
+    const isChinese = userProfile?.language === 'zh';
+    const query = message.toLowerCase();
+    
+    if (query.includes('cost') || query.includes('fee') || query.includes('price') || 
+        query.includes('费用') || query.includes('价格')) {
+        
+        return isChinese ? 
+            `**Tech Nation申请费用：**\n\n• Tech Nation背书：£561\n• 签证申请：£205\n• **总计：£766**\n\n**额外费用：**\n• 医疗附加费：每年£1,035\n• 如果您在申请中包括您的伴侣或子女，他们每人需要支付£766` :
+            `**Tech Nation Application Costs:**\n\n• Tech Nation endorsement: £561\n• Visa application: £205\n• **Total: £766**\n\n**Additional Costs:**\n• Healthcare surcharge: £1,035 per year\n• If you're including your partner or children in your application, they'll each need to pay £766`;
+    }
+    
+    if (query.includes('timeline') || query.includes('time') || query.includes('long') ||
+        query.includes('时间') || query.includes('多久')) {
+        
+        return isChinese ?
+            `**Tech Nation申请时间安排：**\n\n• 证据准备：2-6个月\n• Tech Nation决定：8-12周\n• 内政部签证决定：3周（英国境外），8周（英国境内）\n• 可以支付费用获得更快的决定` :
+            `**Tech Nation Application Timeline:**\n\n• Evidence preparation: 2-6 months\n• Tech Nation decision: 8-12 weeks\n• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)\n• You may be able to pay to get a faster decision`;
+    }
+    
+    return null;
 }
