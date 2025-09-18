@@ -1,19 +1,29 @@
-// api/index.js
+// api/index.js - Fixed for Vercel deployment
 export default function handler(req, res) {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  
-  const html = `<!DOCTYPE html>
+    // Set proper headers
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    
+    try {
+        const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UK Global Talent Visa Assistant for Tech Nation applications">
     <title>UK Global Talent Visa Assistant</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0; 
-            padding: 10px;
+            padding: 15px;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -21,23 +31,37 @@ export default function handler(req, res) {
         }
         
         .container {
-            max-width: 450px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 420px;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
             overflow: hidden;
-            height: 600px;
+            height: 85vh;
+            max-height: 700px;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
-            font-weight: 600;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 400;
         }
         
         .chat {
@@ -48,254 +72,447 @@ export default function handler(req, res) {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            min-height: 0;
+        }
+        
+        .chat::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .chat::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .chat::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
         }
         
         .message {
-            padding: 12px 16px;
-            border-radius: 15px;
+            padding: 14px 18px;
+            border-radius: 18px;
             max-width: 85%;
             word-wrap: break-word;
             font-size: 14px;
-            line-height: 1.4;
-            animation: slideIn 0.3s ease;
+            line-height: 1.5;
+            animation: slideIn 0.4s ease-out;
         }
         
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(15px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
         }
         
         .bot-message {
             background: white;
             color: #333;
             align-self: flex-start;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
         }
         
         .user-message {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             align-self: flex-end;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 2px 12px rgba(102, 126, 234, 0.2);
         }
         
         .button-group {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 12px;
         }
         
         .guide-button {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(102, 126, 234, 0.08);
             color: #667eea;
-            border: 1px solid #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
             border-radius: 20px;
-            padding: 8px 16px;
+            padding: 8px 14px;
             cursor: pointer;
             font-size: 12px;
-            transition: all 0.2s;
+            font-weight: 500;
+            transition: all 0.2s ease;
             white-space: nowrap;
+            user-select: none;
         }
         
         .guide-button:hover {
             background: #667eea;
             color: white;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .guide-button:active {
+            transform: translateY(0);
         }
         
         .input-area {
             padding: 20px;
             background: white;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid #f0f0f0;
         }
         
-        .input-row {
+        .status-area {
             display: flex;
-            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 12px;
         }
         
-        #messageInput {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 25px;
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.2s;
+        .connection-status {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
-        #messageInput:focus {
-            border-color: #667eea;
+        .connection-status.connecting {
+            background: #fff3cd;
+            color: #856404;
         }
         
-        #sendBtn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            min-width: 70px;
-            transition: all 0.2s;
+        .connection-status.connected {
+            background: #d4edda;
+            color: #155724;
         }
         
-        #sendBtn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-        
-        #sendBtn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .upload-area {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
+        .connection-status.error {
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .upload-btn {
             background: #28a745;
             color: white;
             border: none;
-            border-radius: 20px;
-            padding: 8px 16px;
+            border-radius: 15px;
+            padding: 6px 12px;
             cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            user-select: none;
         }
         
         .upload-btn:hover {
             background: #218838;
+            transform: translateY(-1px);
         }
         
-        .status-indicator {
-            font-size: 12px;
-            color: #6c757d;
-            padding: 4px 8px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .status-indicator.connected {
-            color: #28a745;
-            background: #d4edda;
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .quick-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+            gap: 6px;
             margin-bottom: 12px;
         }
         
         .quick-btn {
             background: #f8f9fa;
             color: #6c757d;
-            border: 1px solid #dee2e6;
-            border-radius: 15px;
-            padding: 6px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 8px 6px;
             cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s;
-            flex: 1;
-            min-width: 80px;
+            font-size: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
             text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
         }
         
         .quick-btn:hover {
             background: #667eea;
             color: white;
             border-color: #667eea;
+            transform: translateY(-1px);
         }
-
-        .loading {
-            opacity: 0.7;
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            resize: none;
+            min-height: 20px;
+            max-height: 80px;
+        }
+        
+        #messageInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        #messageInput::placeholder {
+            color: #adb5bd;
+        }
+        
+        #sendBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 14px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            user-select: none;
+        }
+        
+        #sendBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        #sendBtn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+        
+        #sendBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .loading-animation {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                height: 90vh;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .chat {
+                padding: 15px;
+            }
+            
+            .input-area {
+                padding: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Error states */
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        
+        /* Success states */
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>UK Global Talent Visa Assistant</h2>
-            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Tech Nation Endorsement Guide</p>
+            <h1>🇬🇧 UK Global Talent Visa</h1>
+            <p>Tech Nation Endorsement Assistant</p>
         </div>
         
         <div class="chat" id="chatContainer">
             <div class="bot-message">
-                <p><strong>Welcome to your UK Global Talent Visa Assistant! 🇬🇧</strong></p>
-                <p>I'm here to help you understand the Tech Nation endorsement process. I can answer questions about:</p>
+                <p><strong>Welcome! I'm your Tech Nation application assistant 🚀</strong></p>
+                <p>I can help you understand the UK Global Talent Visa application process for digital technology professionals.</p>
                 
                 <div class="button-group">
-                    <button class="guide-button" onclick="askQuestion('What are the eligibility requirements?')">Eligibility</button>
-                    <button class="guide-button" onclick="askQuestion('What evidence do I need?')">Evidence</button>
-                    <button class="guide-button" onclick="askQuestion('How much does it cost?')">Costs</button>
-                    <button class="guide-button" onclick="askQuestion('How long does the process take?')">Timeline</button>
+                    <button class="guide-button" onclick="askQuestion('What are the eligibility requirements?')">✅ Eligibility</button>
+                    <button class="guide-button" onclick="askQuestion('What evidence do I need?')">📄 Evidence</button>
+                    <button class="guide-button" onclick="askQuestion('How much does it cost?')">💰 Costs</button>
+                    <button class="guide-button" onclick="askQuestion('How long does the process take?')">⏰ Timeline</button>
                 </div>
                 
-                <p style="margin-top: 15px;">Ask me anything about the application process!</p>
+                <p style="margin-top: 12px; font-size: 13px; color: #666;">Ask me anything about the Tech Nation endorsement process!</p>
             </div>
         </div>
         
         <div class="input-area">
-            <div class="upload-area">
-                <button class="upload-btn" onclick="document.getElementById('resumeUpload').click()">📄 Upload Resume</button>
-                <div class="status-indicator" id="connectionStatus">Connecting...</div>
+            <div class="status-area">
+                <div class="connection-status connecting" id="connectionStatus">🔗 Connecting...</div>
+                <button class="upload-btn" onclick="document.getElementById('resumeUpload').click()">📄 Upload CV</button>
                 <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(event)">
             </div>
             
             <div class="quick-actions">
-                <button class="quick-btn" onclick="askQuestion('Am I eligible?')">Eligibility</button>
+                <button class="quick-btn" onclick="askQuestion('Am I eligible?')">Eligible?</button>
                 <button class="quick-btn" onclick="askQuestion('Process steps')">Process</button>
                 <button class="quick-btn" onclick="askQuestion('Evidence list')">Evidence</button>
                 <button class="quick-btn" onclick="askQuestion('Total costs')">Costs</button>
             </div>
             
             <div class="input-row">
-                <input type="text" id="messageInput" placeholder="Ask about eligibility, evidence, process, timeline..." 
-                       onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }">
-                <button id="sendBtn" onclick="sendMessage()">Send</button>
+                <input type="text" id="messageInput" 
+                       placeholder="Ask about eligibility, evidence, costs, timeline..." 
+                       onkeypress="handleKeyPress(event)"
+                       disabled>
+                <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
             </div>
         </div>
     </div>
 
     <script>
-        let userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        let userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        let isLoading = false;
         
+        // Connection check with improved error handling
         async function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            const inputEl = document.getElementById('messageInput');
+            const sendBtnEl = document.getElementById('sendBtn');
+            
             try {
-                console.log('Checking connection...');
+                console.log('🔗 Checking API connection...');
+                statusEl.textContent = '🔗 Connecting...';
+                statusEl.className = 'connection-status connecting';
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
                 const response = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ 
                         message: 'test connection',
                         userId: userId
-                    })
+                    }),
+                    signal: controller.signal
                 });
                 
-                console.log('Response status:', response.status);
-                const data = await response.json();
-                console.log('Response data:', data);
+                clearTimeout(timeoutId);
                 
-                if (response.ok && data.response) {
-                    document.getElementById('connectionStatus').textContent = '✅ Connected';
-                    document.getElementById('connectionStatus').classList.add('connected');
-                } else {
-                    throw new Error('Connection failed: ' + (data.error || 'Unknown error'));
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
+                
+                const data = await response.json();
+                console.log('✅ Connection successful:', data);
+                
+                if (data.response) {
+                    statusEl.textContent = '✅ Connected';
+                    statusEl.className = 'connection-status connected';
+                    
+                    // Enable input elements
+                    inputEl.disabled = false;
+                    sendBtnEl.disabled = false;
+                    inputEl.focus();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+                
             } catch (error) {
-                console.error('Connection test failed:', error);
-                document.getElementById('connectionStatus').textContent = '⚠️ Connection Error';
-                document.getElementById('connectionStatus').title = error.message;
+                console.error('❌ Connection failed:', error);
+                
+                let errorMessage = '❌ Connection Failed';
+                if (error.name === 'AbortError') {
+                    errorMessage = '❌ Timeout';
+                } else if (error.message.includes('fetch')) {
+                    errorMessage = '❌ Network Error';
+                }
+                
+                statusEl.textContent = errorMessage;
+                statusEl.className = 'connection-status error';
+                statusEl.title = error.message;
+                
+                // Keep inputs disabled
+                inputEl.disabled = true;
+                sendBtnEl.disabled = true;
+                
+                // Retry connection after 5 seconds
+                setTimeout(() => {
+                    if (statusEl.className.includes('error')) {
+                        checkConnection();
+                    }
+                }, 5000);
             }
         }
         
+        // Add message to chat
         function addMessage(content, isUser = false) {
             const chatContainer = document.getElementById('chatContainer');
             const messageDiv = document.createElement('div');
@@ -303,126 +520,55 @@ export default function handler(req, res) {
             messageDiv.innerHTML = content;
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageDiv;
         }
         
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            // Add user message
-            addMessage(escapeHtml(message), true);
-            input.value = '';
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Sending...';
-            sendBtn.classList.add('loading');
-            
-            try {
-                console.log('Sending message:', message);
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: message,
-                        userId: userId
-                    })
-                });
-                
-                console.log('Chat response status:', response.status);
-                const data = await response.json();
-                console.log('Chat response data:', data);
-                
-                if (response.ok && data.response) {
-                    // Format markdown-style response
-                    const formattedResponse = formatResponse(data.response);
-                    addMessage(formattedResponse);
-                } else {
-                    throw new Error(data.error || 'Unknown error');
-                }
-            } catch (error) {
-                console.error('Chat error:', error);
-                addMessage('Sorry, I encountered an error. Please try again or visit the official Tech Nation website for guidance.');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Send';
-                sendBtn.classList.remove('loading');
-                input.focus();
-            }
-        }
-        
+        // Format response text
         function formatResponse(text) {
+            if (!text) return 'No response received.';
+            
             return text
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '</p><p>')
                 .replace(/\n/g, '<br>')
+                .replace(/^/, '<p>')
+                .replace(/$/, '</p>')
                 .replace(/• /g, '• ');
         }
         
+        // Escape HTML to prevent XSS
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
         
-        function askQuestion(question) {
-            document.getElementById('messageInput').value = question;
-            sendMessage();
+        // Handle keyboard input
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
         }
         
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Send message function with improved error handling
+        async function sendMessage() {
+            if (isLoading) return;
             
-            if (file.size > 10 * 1024 * 1024) {
-                alert('File too large. Please upload a file smaller than 10MB.');
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+            
+            if (!message) {
+                input.focus();
                 return;
             }
             
-            try {
-                const text = await readFileAsText(file);
-                
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        content: text,
-                        userId: userId,
-                        filename: file.name
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('connectionStatus').textContent = '📄 Resume uploaded';
-                    document.getElementById('connectionStatus').classList.add('connected');
-                    addMessage('Resume uploaded successfully! You can now ask me questions about your background in relation to the Tech Nation criteria.');
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                alert('Upload failed: ' + error.message);
-            }
-        }
-        
-        function readFileAsText(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = e => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-        
-        // Initialize connection check
-        document.addEventListener('DOMContentLoaded', function() {
-            checkConnection();
-        });
-        
-        // Check connection immediately as well
-        checkConnection();
-    </script>
-</body>
-</html>`;
+            // Update UI for loading state
+            isLoading = true;
+            addMessage(escapeHtml(message), true);
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sen

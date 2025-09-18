@@ -1,24 +1,30 @@
 {
-  "name": "global-talent-visa-bot",
+  "name": "uk-global-talent-visa-assistant",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "UK Global Talent Visa chatbot assistant for Tech Nation applications",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "@langchain/community": "^0.3.55",
-    "@langchain/openai": "^0.6.11",
-    "@vercel/kv": "^3.0.0",
-    "body-parser": "^2.2.0",
-    "cheerio": "^1.1.2",
-    "formidable": "^3.5.1",
-    "langchain": "^0.2.11",
-    "openai": "^4.104.0",
-    "pdf-parse": "^1.1.1"
-  }
+    
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "keywords": [
+    "uk-visa",
+    "tech-nation",
+    "global-talent-visa",
+    "immigration",
+    "chatbot"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }

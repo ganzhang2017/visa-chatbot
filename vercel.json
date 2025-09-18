@@ -1,27 +1,41 @@
 {
+  "version": 2,
   "functions": {
-    "api/chat.js": {
-      "maxDuration": 30
-    },
-    "api/upload.js": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x",
       "maxDuration": 30
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/",
-      "destination": "/api/index"
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
     }
   ],
   "headers": [
     {
-      "source": "/api/index",
+      "source": "/api/(.*)",
       "headers": [
         {
-          "key": "Content-Type",
-          "value": "text/html; charset=utf-8"
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
         }
       ]
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
