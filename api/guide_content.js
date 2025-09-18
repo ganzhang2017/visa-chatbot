@@ -120,4 +120,58 @@ Examples of relevant evidence could include:
 • You led the growth of a non-profit organisation or social enterprise with a specific focus on the digital technology sector, as evidenced by reference letter(s) from leading industry expert(s) describing your work, or as evidenced by news clippings or similar evidence
 • Outside of your normal day-to-day job role, you led or were a significant contributor to a substantial open source project, as evidenced from compilation of code commit summaries, repo stars or similar metrics such as download statistics, where possible
 • Outside of your normal day-to-day job role, you established, led or were a senior contributor to a large technology-led industry initiative, evidenced through reference letter(s) from global senior project executives
-• You have received nationally or internationally recognised prizes or awards for excellence specifically in the digital technology sector, as evidenced by the award itself, reference letter
+• You have received nationally or internationally recognised prizes or awards for excellence specifically in the digital technology sector, as evidenced by the award itself, reference letter(s) from leading industry expert(s) describing your achievement, or as evidenced by news clippings or similar evidence
+
+APPLICATION PROCESS
+
+Stage 1: Tech Nation Endorsement (£561 fee)
+Stage 2: Home Office Visa Application (£205 fee + £1,035/year healthcare surcharge)
+
+EVIDENCE PORTFOLIO
+• Maximum 10 pieces of evidence
+• Focus on external recognition and quantifiable impact
+• Recent evidence preferred (last 5 years)
+• Each piece should demonstrate contribution to digital technology sector
+
+RECOMMENDATION LETTERS
+• Must be from established leaders in digital technology
+• Should demonstrate knowledge of your work and achievements
+• Written specifically for this application
+• Include recommender's credentials and contact information
+
+TIMELINE EXPECTATIONS
+• Evidence preparation: 2-6 months
+• Tech Nation decision: 8-12 weeks
+• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)
+• You may be able to pay to get a faster decision
+
+COSTS
+• Tech Nation endorsement: £561
+• Visa application: £205
+• Healthcare surcharge: £1,035 per year
+• If you're including your partner or children in your application, they'll each need to pay £766
+
+The visa allows you to:
+• Live and work in the UK for up to 5 years
+• Bring family members
+• Apply for settlement after 3-5 years
+• Start your own business
+• Change jobs freely
+`;
+}
+
+// Function to manually refresh cache (useful for updates)
+export function clearCache() {
+    cachedContent = null;
+    cacheTimestamp = null;
+    console.log("Content cache cleared");
+}
+
+// Export cache status for debugging
+export function getCacheStatus() {
+    return {
+        hasCachedContent: !!cachedContent,
+        cacheAge: cacheTimestamp ? Date.now() - cacheTimestamp : null,
+        cacheSize: cachedContent ? cachedContent.length : 0
+    };
+}
