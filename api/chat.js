@@ -1,3 +1,4 @@
+// api/chat.js
 import { createClient } from "@vercel/kv";
 import { getNotionPageContent } from './guide_content.js';
 
@@ -572,7 +573,7 @@ function getFallbackResponse(message, userProfile) {
         
         return isChinese ?
             `**Tech Nation申请时间安排：**\n\n• 证据准备：2-6个月\n• Tech Nation决定：8-12周\n• 内政部签证决定：3周（英国境外），8周（英国境内）\n• 可以支付费用获得更快的决定` :
-            `**Tech Nation Application Timeline:**\n\n• Evidence preparation: 2-6 months\n• Tech Nation decision: 8-12 weeks\n• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)\n• You may be able to pay to get a faster decision`;
+            `**Tech Nation Application Timeline:**\n\n• Evidence preparation: 2-6 months\n• Tech Nation decision: 8-12 weeks\n• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)• You may be able to pay to get a faster decision`;
     }
     
     return null;
