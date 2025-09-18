@@ -524,19 +524,21 @@ export default async function handler(req, res) {
         console.log('Found relevant context, length:', relevantContext.length);
 
         if (!relevantContext || relevantContext.trim().length === 0) {
+            const fallback = getFallbackResponse(message, userProfile);
             return res.status(200).json({ 
-                response: 'I could not find specific information about that in the Tech Nation guidance. Could you please rephrase your question or ask about eligibility criteria, application process, evidence requirements, or timeline?'
+                response: fallback || 'I could not find specific information about that in the Tech Nation guidance. Could you please rephrase your question or ask about eligibility criteria, application process, evidence requirements, or timeline?'
             });
         }
 
-        // Get AI response using FREE system
+        // Get AI response using fallback system
         let response;
         try {
-            response = await callFreeAI(message, relevantContext, userProfile);
-            console.log('Response generated using FREE system, length:', response.length);
-        } catch (error) {
-            console.error('Free AI failed, using fallback:', error);
             response = getIntelligentFallback(message, relevantContext, userProfile);
+            console.log('Response generated using fallback system, length:', response.length);
+        } catch (error) {
+            console.error('Fallback failed:', error);
+            const basicFallback = getFallbackResponse(message, userProfile);
+            response = basicFallback || 'I encountered an issue processing your request. Please try asking about eligibility, process, documents, or timeline.';
         }
 
         // Store conversation in KV (non-blocking)
@@ -588,8 +590,8 @@ OPTIONAL CRITERIA (must meet at least 2 of 4)
 4. Evidence of innovation in digital technology that has led to new or significantly improved products, technologies, or methodology
 
 APPLICATION PROCESS
-Stage 1: Tech Nation Endorsement (£456 fee, 8-12 weeks processing)
-Stage 2: Home Office Visa Application (separate fees and timeline)
+Stage 1: Tech Nation Endorsement (£561 fee)
+Stage 2: Home Office Visa Application (separate fees £205 and timeline)
 
 EVIDENCE PORTFOLIO
 • Maximum 10 pieces of evidence
@@ -605,7 +607,9 @@ RECOMMENDATION LETTERS
 
 TIMELINE EXPECTATIONS
 • Evidence preparation: 2-6 months
-• Tech Nation review: 8-12 weeks (rush service available)
-• Visa application: 3-8 weeks
-• Total process: 4-8 months typically`;
+• 3 weeks, if you’re outside the UK
+  8 weeks, if you’re inside the UK
+You may be able to pay to get a faster decision.
+
+
 }

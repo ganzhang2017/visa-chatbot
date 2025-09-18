@@ -1,4 +1,309 @@
-export default function handler(req, res) {
+selectRole(role) {
+                this.userProfile.role = role;
+                const roleTexts = {
+                    en: { technical: 'Technical', business: 'Business' },
+                    zh: { technical: '技术岗位', business: '商务岗位' }
+                };
+                const responseText = this.currentLanguage === 'en' ? 
+                    'My role is: ' + roleTexts.en[role] :
+                    '我的角色是：' + roleTexts.zh[role];
+                this.addMessage(responseText, 'user');
+                
+                const stepText = this.currentLanguage === 'en' ? 'Step 3/5: Background' : '步骤 3/5：背景';
+                this.currentStep = 'specifics';
+                this.addProgressIndicator(stepText);
+                
+                setTimeout(() => {
+                    if (role === 'technical') {
+                        this.askTechnicalQuestions();
+                    } else {
+                        this.askBusinessQuestions();
+                    }
+                }, 1000);
+            }
+            
+            askTechnicalQuestions() {
+                const t = this.texts[this.currentLanguage];
+                const questionText = this.currentLanguage === 'en' ?
+                    'For technical roles, I need to understand your contributions and recognition:' :
+                    '对于技术岗位，我需要了解您的贡献和认可：';
+                    
+                this.addMessage(questionText, 'bot');
+                
+                setTimeout(() => {
+                    const selectText = this.currentLanguage === 'en' ?
+                        'Do you have any of the following? (Select all that apply)' :
+                        '您是否具备以下任何条件？（选择所有适用项）';
+                    this.addMessage(selectText, 'bot');
+                    
+                    const buttonsHtml = '<div class="button-group">' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\\'opensource\\')">' +
+                        (this.currentLanguage === 'en' ? '🔓 Open Source Contributions' : '🔓 开源贡献') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\\'speaking\\')">' +
+                        (this.currentLanguage === 'en' ? '🎤 Conference Speaking' : '🎤 会议发言') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\\'publications\\')">' +
+                        (this.currentLanguage === 'en' ? '📝 Publications/Blogs' : '📝 出版物/博客') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.addTechContribution(\\'awards\\')">' +
+                        (this.currentLanguage === 'en' ? '🏆 Awards/Recognition' : '🏆 奖项/认可') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.finishContributions()">' +
+                        (this.currentLanguage === 'en' ? '✅ Done' : '✅ 完成') + '</button>' +
+                        '</div>';
+                    
+                    const buttonMessage = document.createElement('div');
+                    buttonMessage.className = 'message bot-message';
+                    buttonMessage.innerHTML = buttonsHtml;
+                    this.chat.appendChild(buttonMessage);
+                    this.scrollToBottom();
+                }, 1000);
+            }
+            
+            askBusinessQuestions() {
+                const questionText = this.currentLanguage === 'en' ?
+                    'For business roles, I need to understand your impact and external activities:' :
+                    '对于商务岗位，我需要了解您的影响和外部活动：';
+                    
+                this.addMessage(questionText, 'bot');
+                
+                setTimeout(() => {
+                    const impactText = this.currentLanguage === 'en' ?
+                        'What kind of business impact have you achieved?' :
+                        '您取得了什么样的商业影响？';
+                    this.addMessage(impactText, 'bot');
+                    
+                    const buttonsHtml = '<div class="button-group">' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\\'revenue\\')">' +
+                        (this.currentLanguage === 'en' ? '💰 Revenue Growth' : '💰 收入增长') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\\'products\\')">' +
+                        (this.currentLanguage === 'en' ? '🚀 Product Launches' : '🚀 产品发布') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\\'scaling\\')">' +
+                        (this.currentLanguage === 'en' ? '📈 Team/Company Scaling' : '📈 团队/公司扩展') + '</button>' +
+                        '<button class="workflow-button" onclick="bot.selectImpact(\\'innovation\\')">' +
+                        (this.currentLanguage === 'en' ? '💡 Innovation Projects' : '💡 创新项目') + '</button>' +
+                        '</div>';
+                    
+                    const buttonMessage = document.createElement('div');
+                    buttonMessage.className = 'message bot-message';
+                    buttonMessage.innerHTML = buttonsHtml;
+                    this.chat.appendChild(buttonMessage);
+                    this.scrollToBottom();
+                }, 1000);
+            }
+            
+            addTechContribution(contribution) {
+                if (!this.userProfile.contributions) this.userProfile.contributions = [];
+                if (!this.userProfile.contributions.includes(contribution)) {
+                    this.userProfile.contributions.push(contribution);
+                    
+                    const labels = {
+                        en: {
+                            'opensource': 'Open Source Contributions',
+                            'speaking': 'Conference Speaking',
+                            'publications': 'Publications/Blogs',
+                            'awards': 'Awards/Recognition'
+                        },
+                        zh: {
+                            'opensource': '开源贡献',
+                            'speaking': '会议发言',
+                            'publications': '出版物/博客',
+                            'awards': '奖项/认可'
+                        }
+                    };
+                    
+                    const addedText = this.currentLanguage === 'en' ? 'Added: ' : '已添加：';
+                    this.addMessage(addedText + labels[this.currentLanguage][contribution], 'user');
+                }
+            }
+            
+            finishContributions() {
+                const stepText = this.currentLanguage === 'en' ? 'Step 4/5: Resume Upload' : '步骤 4/5：简历上传';
+                this.currentStep = 'upload';
+                this.addProgressIndicator(stepText);
+                
+                setTimeout(() => {
+                    const uploadText = this.currentLanguage === 'en' ?
+                        'Great! Now please upload your resume (PDF format only) so I can analyze your background in detail.' :
+                        '很好！现在请上传您的简历（仅PDF格式），以便我详细分析您的背景。';
+                    this.addMessage(uploadText, 'bot');
+                    this.uploadBtn.style.display = 'inline-block';
+                    
+                    // Add continue without upload option
+                    const buttonHtml = '<div class="button-group" style="margin-top: 15px;">' +
+                        '<button class="guide-button" onclick="bot.performFinalAnalysis()">' +
+                        (this.currentLanguage === 'en' ? 'Skip resume upload' : '跳过简历上传') + '</button>' +
+                        '</div>';
+                    
+                    const buttonMessage = document.createElement('div');
+                    buttonMessage.className = 'message bot-message';
+                    buttonMessage.innerHTML = buttonHtml;
+                    this.chat.appendChild(buttonMessage);
+                    this.scrollToBottom();
+                }, 1000);
+            }
+            
+            selectImpact(impact) {
+                this.userProfile.impact = impact;
+                
+                const labels = {
+                    en: {
+                        'revenue': 'Revenue Growth',
+                        'products': 'Product Launches',
+                        'scaling': 'Team/Company Scaling',
+                        'innovation': 'Innovation Projects'
+                    },
+                    zh: {
+                        'revenue': '收入增长',
+                        'products': '产品发布',
+                        'scaling': '团队/公司扩展',
+                        'innovation': '创新项目'
+                    }
+                };
+                
+                const impactText = this.currentLanguage === 'en' ? 'My main impact: ' : '我的主要影响：';
+                this.addMessage(impactText + labels[this.currentLanguage][impact], 'user');
+                this.finishContributions();
+            }
+            
+            performFinalAnalysis() {
+                const stepText = this.currentLanguage === 'en' ? 'Step 5/5: Analysis' : '步骤 5/5：分析';
+                this.currentStep = 'analysis';
+                this.addProgressIndicator(stepText);
+                
+                const analyzingText = this.currentLanguage === 'en' ?
+                    'Analyzing your profile against Tech Nation criteria...' :
+                    '根据Tech Nation标准分析您的档案...';
+                this.addMessage(analyzingText, 'bot');
+                
+                setTimeout(() => {
+                    this.generatePersonalizedFeedback();
+                }, 2000);
+            }
+            
+            generatePersonalizedFeedback() {
+                let feedback = this.currentLanguage === 'en' ? 
+                    '📊 **Your Comprehensive Tech Nation Assessment:**\\n\\n' :
+                    '📊 **您的综合Tech Nation评估：**\\n\\n';
+                
+                const expYears = this.userProfile.experience;
+                if (this.currentLanguage === 'en') {
+                    // Experience assessment with more detail
+                    if (expYears === '0-2') {
+                        feedback += '⚠️ **Experience Level:** With 0-2 years, focus on **"Exceptional Promise"** route.\\n';
+                        feedback += '• Emphasize potential and unique contributions\\n';
+                        feedback += '• Highlight early career recognition\\n\\n';
+                    } else if (expYears === '3-5') {
+                        feedback += '✅ **Experience Level:** 3-5 years is solid for **"Exceptional Promise"** route.\\n';
+                        feedback += '• Focus on demonstrating rapid growth\\n';
+                        feedback += '• Show external recognition despite shorter experience\\n\\n';
+                    } else {
+                        feedback += '✅ **Experience Level:** Strong foundation for **"Exceptional Talent"** route.\\n';
+                        feedback += '• Demonstrate established expertise and recognition\\n';
+                        feedback += '• Show progression to industry influence\\n\\n';
+                    }
+                    
+                    // Role-specific detailed feedback
+                    if (this.userProfile.role === 'technical') {
+                        feedback += '💻 **Technical Role Strategy:**\\n';
+                        if (this.userProfile.contributions && this.userProfile.contributions.length > 0) {
+                            feedback += 'Great foundation with: ' + this.userProfile.contributions.join(', ') + '\\n\\n';
+                            
+                            this.userProfile.contributions.forEach(contrib => {
+                                const detailedTips = {
+                                    'opensource': '🔓 **Open Source:** Document download statistics and community adoption\\n',
+                                    'speaking': '🎤 **Speaking:** Include audience sizes and conference prestige\\n',
+                                    'publications': '📝 **Publications:** Show view counts and industry impact\\n',
+                                    'awards': '🏆 **Awards:** These carry the highest weight - maximize impact\\n'
+                                };
+                                feedback += detailedTips[contrib];
+                            });
+                        }
+                    } else if (this.userProfile.role === 'business') {
+                        feedback += '💼 **Business Role Strategy:**\\n';
+                        if (this.userProfile.impact) {
+                            feedback += 'Focus area: ' + this.userProfile.impact + '\\n';
+                        }
+                        feedback += '• Quantify everything with specific metrics\\n';
+                        feedback += '• Show external recognition and validation\\n';
+                        feedback += '• Demonstrate innovation in business processes\\n\\n';
+                    }
+                } else {
+                    // Chinese version with similar detail
+                    if (expYears === '0-2') {
+                        feedback += '⚠️ **经验水平：** 0-2年经验，专注于**"杰出潜力"**路径。\\n';
+                        feedback += '• 强调潜力和独特贡献\\n';
+                        feedback += '• 突出早期职业认可\\n\\n';
+                    } else if (expYears === '3-5') {
+                        feedback += '✅ **经验水平：** 3-5年经验适合**"杰出潜力"**路径。\\n';
+                        feedback += '• 专注于展示快速成长\\n';
+                        feedback += '• 显示外部认可\\n\\n';
+                    } else {
+                        feedback += '✅ **经验水平：** 强有力的**"杰出人才"**路径基础。\\n';
+                        feedback += '• 展示既定专业知识和认可\\n';
+                        feedback += '• 显示向行业影响力的进展\\n\\n';
+                    }
+                    
+                    if (this.userProfile.role === 'technical') {
+                        feedback += '💻 **技术岗位策略：**\\n';
+                        if (this.userProfile.contributions && this.userProfile.contributions.length > 0) {
+                            feedback += '良好基础：' + this.userProfile.contributions.join('、') + '\\n\\n';
+                        }
+                    } else if (this.userProfile.role === 'business') {
+                        feedback += '💼 **商务岗位策略：**\\n';
+                        feedback += '• 用具体指标量化一切\\n';
+                        feedback += '• 显示外部认可和验证\\n';
+                        feedback += '• 展示商业流程创新\\n\\n';
+                    }
+                }
+                
+                // Cost breakdown
+                if (this.currentLanguage === 'en') {
+                    feedback += '💰 **Application Costs:**\\n';
+                    feedback += '• Tech Nation endorsement: £561\\n';
+                    feedback += '• Visa application: £205\\n';
+                    feedback += '• **Total: £766**\\n';
+                    feedback += '\\n💊 **Additional Costs:**\\n';
+                    feedback += '• Healthcare surcharge: £1,035/year\\n';
+                    feedback += '• Dependants: £766 each (if applicable)\\n';
+                    
+                    feedback += '\\n🎯 **Your Action Plan:**\\n';
+                    feedback += '• Gather evidence for each claim with specific examples\\n';
+                    feedback += '• Prepare 10 pieces of evidence across the 4 criteria\\n';
+                    feedback += '• Get 3 strong recommendation letters from industry leaders\\n';
+                } else {
+                    feedback += '💰 **申请费用：**\\n';
+                    feedback += '• Tech Nation背书：£561\\n';
+                    feedback += '• 签证申请：£205\\n';
+                    feedback += '• **总计：£766**\\n';
+                    feedback += '\\n💊 **额外费用：**\\n';
+                    feedback += '• 医疗附加费：£1,035/年\\n';
+                    feedback += '• 家属：每人£766（如适用）\\n';
+                    
+                    feedback += '\\n🎯 **您的行动计划：**\\n';
+                    feedback += '• 为每项声明收集具体证据\\n';
+                    feedback += '• 准备跨4个标准的10项证据\\n';
+                    feedback += '• 获得3封来自行业领导者的推荐信\\n';
+                }
+                
+                this.addMessage(feedback, 'bot');
+                
+                setTimeout(() => {
+                    const finalText = this.currentLanguage === 'en' ?
+                        'I now have a complete picture of your background. What would you like to focus on next?' :
+                        '我现在对您的背景有了完整的了解。您接下来想重点关注什么？';
+                    this.addMessage(finalText, 'bot');
+                    this.showFinalOptions();
+                }, 2000);
+            }
+            
+            showFinalOptions() {
+                const buttonsHtml = '<div class="button-group">' +
+                    '<button class="guide-button" onclick="bot.askQuestion(\\'evidence requirements\\')">' +
+                    (this.currentLanguage === 'en' ? '📋 Evidence Requirements' : '📋 证据要求') + '</button>' +
+                    '<button class="guide-button" onclick="bot.askQuestion(\\'recommendation letters\\')">' +
+                    (this.currentLanguage === 'en' ? '✍️ Recommendation Letters' : '✍️ 推荐信') + '</button>' +
+                    '<button class="guide-button" onclick="bot.askQuestion(\\'application timeline\\')">' +
+                    (this.currentLanguage === 'en' ? '⏰ Application Timeline' : '⏰ 申请时间') + '</button>' +
+                    '<button class="workflow-button" onclick="bot.enableFreeChat()">' +
+                    (export default function handler(req, res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   
   const html = `<!DOCTYPE html>
