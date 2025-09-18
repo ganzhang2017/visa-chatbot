@@ -74,14 +74,6 @@ function findRelevantSections(content, query, maxSections = 4) {
             }
         });
         
-        // 4. Context-specific terms
-        const contextTerms = getContextTerms(queryLower);
-        contextTerms.forEach(term => {
-            if (paraLower.includes(term)) {
-                score += 6;
-            }
-        });
-        
         return { paragraph, score };
     });
     
@@ -100,35 +92,17 @@ function findRelevantSections(content, query, maxSections = 4) {
     return relevantSections.join('\n\n---\n\n');
 }
 
-// Get context-specific terms based on query intent
-function getContextTerms(query) {
-    if (query.includes('evidence') || query.includes('document') || query.includes('proof')) {
-        return ['portfolio', 'cv', 'letter', 'publication', 'patent', 'award', 'media coverage', 'conference', 'recognition'];
-    }
-    if (query.includes('process') || query.includes('step') || query.includes('how')) {
-        return ['stage', 'submit', 'application', 'review', 'decision', 'timeline', 'fee', 'biometric'];
-    }
-    if (query.includes('eligibility') || query.includes('requirement') || query.includes('qualify')) {
-        return ['experience', 'years', 'sector', 'talent', 'promise', 'meet', 'demonstrate'];
-    }
-    if (query.includes('timeline') || query.includes('time') || query.includes('long')) {
-        return ['weeks', 'months', 'processing', 'wait', 'decision', 'priority', 'rush'];
-    }
-    return [];
-}
-
-// Intelligent fallback that analyzes the context and provides detailed responses
-function getIntelligentFallback(prompt, context, userProfile = null) {
+// Intelligent response generator
+function generateIntelligentResponse(prompt, context) {
     const query = prompt.toLowerCase();
-    const isChinese = userProfile?.language === 'zh';
     
     // Extract relevant information from context based on query
     const contextLines = context.split('\n').filter(line => line.trim().length > 20);
     
     let response = '';
     
-    if (query.includes('process') || query.includes('how') || query.includes('steps') || 
-        query.includes('流程') || query.includes('如何') || query.includes('步骤')) {
+    if (query.includes('process') || query.includes('how') || query.includes('steps')) {
+        response += `**Tech Nation Application Process:**\n\n`;
         
         const processInfo = contextLines.filter(line => 
             line.toLowerCase().includes('stage') || 
@@ -138,53 +112,13 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
             line.toLowerCase().includes('process')
         ).slice(0, 8);
         
-        if (isChinese) {
-            response += `**Tech Nation申请流程：**\n\n`;
-        } else {
-            response += `**Tech Nation Application Process:**\n\n`;
-        }
-        
         if (processInfo.length > 0) {
-            response += isChinese ? `根据Tech Nation指南：\n\n` : `Based on the Tech Nation guidance:\n\n`;
+            response += `Based on the Tech Nation guidance:\n\n`;
             processInfo.forEach((info, index) => {
                 response += `• ${info.trim()}\n`;
             });
         } else {
-            if (isChinese) {
-                response += `**步骤1：Tech Nation背书申请**
-• 费用：£561
-• 处理时间：8-12周（标准），2-3周（加急服务额外收费）
-• 在线申请通过Tech Nation门户
-
-**步骤2：内政部签证申请**
-• 费用：£205
-• 处理时间：3周（英国境外），8周（英国境内）
-• 需要额外文件和生物识别
-
-**费用明细：**
-• Tech Nation背书：£561
-• 签证申请费：£205
-• **总计：£766**
-
-**额外费用：**
-• 医疗附加费：每年£1,035
-• 如果您在申请中包括您的伴侣或子女，他们每人需要支付£766
-
-**完整流程：**
-1. 准备证据档案（2-6个月）
-2. 获得推荐信（3封）
-3. 提交Tech Nation申请（£561）
-4. 等待背书决定（8-12周）
-5. 申请实际签证（£205）
-6. 生物识别预约
-7. 收到签证决定
-
-**签证有效期：**
-• 最长5年有效期
-• 可无限次续签
-• 3-5年后可申请永居`;
-            } else {
-                response += `**Step 1: Tech Nation Endorsement Application**
+            response += `**Step 1: Tech Nation Endorsement Application**
 • Cost: £561
 • Processing: 8-12 weeks (standard), faster service available for extra cost
 • Online application via Tech Nation portal
@@ -216,20 +150,9 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 • Up to 5 years validity
 • No limit on renewals
 • Eligible for settlement after 3-5 years`;
-            }
         }
         
-        response += isChinese ? 
-            `\n\n**重要提示：**
-• 两个阶段分别收费：£561 + £205
-• 医疗附加费每年£1,035（必须）
-• 家属需要单独支付相同费用
-
-**后续问题：**
-• 您需要了解医疗附加费详情吗？
-• 想知道家属申请要求吗？
-• 需要证据准备指导吗？` :
-            `\n\n**Important Notes:**
+        response += `\n\n**Important Notes:**
 • Two-stage payment: £561 + £205
 • Healthcare surcharge £1,035/year (mandatory)
 • Dependants pay same fees separately
@@ -242,49 +165,9 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
         return response;
     }
     
-    if (query.includes('evidence') || query.includes('document') || query.includes('portfolio') ||
-        query.includes('证据') || query.includes('文件') || query.includes('档案')) {
-        
-        let response = isChinese ? 
-            `**Tech Nation申请的证据要求：**\n\n` :
-            `**Evidence Requirements for Tech Nation Application:**\n\n`;
-        
-        if (isChinese) {
-            response += `**主要证据类别：**
-
-**1. 职业外的认可**
-• 主要出版物的媒体报道
-• 重要会议发言
-• 行业奖项或荣誉
-• 顾问角色
-
-**2. 技术专长**
-• 有影响力的开源贡献
-• 技术出版物或专利
-• 专家同行的认可
-
-**3. 学术/商业成功**
-• 有引用的研究
-• 有指标的产品发布
-• 收入增长成就
-
-**4. 数字技术创新**
-• 新技术或方法
-• 重大技术改进
-• 技术转型领导
-
-**专业建议：**
-• 最多10项证据
-• 质量胜过数量
-• 包含可量化指标
-• 显示外部认可
-
-**后续问题：**
-• 您目前有什么类型的证据？
-• 您认为自己在哪个标准上最强？
-• 需要加强任何特定领域的帮助吗？`;
-        } else {
-            response += `**Key Evidence Categories:**
+    if (query.includes('evidence') || query.includes('document') || query.includes('portfolio')) {
+        response += `**Evidence Requirements for Tech Nation Application:**\n\n`;
+        response += `**Key Evidence Categories:**
 
 **1. Recognition Outside Immediate Occupation**
 • Media coverage in major publications
@@ -317,15 +200,12 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 • What type of evidence do you currently have?
 • Which criteria do you think you're strongest in?
 • Need help strengthening any particular area?`;
-        }
         
         return response;
     }
     
-    // Default fallback with language support
-    response = isChinese ? 
-        `根据提供的Tech Nation指南：\n\n` :
-        `Based on the Tech Nation guidance provided:\n\n`;
+    // Default response using context
+    response = `Based on the Tech Nation guidance provided:\n\n`;
     
     // Try to find relevant lines from context
     const relevantLines = contextLines.filter(line => {
@@ -342,17 +222,7 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
         response += `\n`;
     }
     
-    if (isChinese) {
-        response += `我找到了与您问题相关的信息。如需更具体的指导，请询问：
-
-• **申请流程** - 步骤和要求
-• **证据要求** - 您需要什么文件
-• **资格标准** - 谁有资格获得签证
-• **时间安排** - 流程需要多长时间
-
-**您想让我详细说明这些领域中的任何一个吗？**`;
-    } else {
-        response += `I found this information related to your question. For more specific guidance, please ask about:
+    response += `I found this information related to your question. For more specific guidance, please ask about:
 
 • **Application Process** - Steps and requirements
 • **Evidence Requirements** - What documentation you need
@@ -360,7 +230,6 @@ function getIntelligentFallback(prompt, context, userProfile = null) {
 • **Timeline** - How long the process takes
 
 **Would you like me to elaborate on any of these areas?**`;
-    }
     
     return response;
 }
@@ -401,18 +270,16 @@ export default async function handler(req, res) {
 
     try {
         const body = req.body;
-        let message, userId, userProfile;
+        let message, userId;
 
         // Handle different request formats
         if (body.message) {
             message = body.message;
             userId = body.userId;
-            userProfile = body.userProfile;
         } else if (body.messages) {
             const messages = body.messages;
             message = messages[messages.length - 1]?.content;
             userId = body.userId;
-            userProfile = body.userProfile;
         } else {
             return res.status(400).json({ error: 'No message found in request' });
         }
@@ -423,11 +290,10 @@ export default async function handler(req, res) {
 
         // Handle test connection
         if (message === 'test connection') {
-            return res.status(200).json({ response: 'API connection successful! Using intelligent fallback system 🚀' });
+            return res.status(200).json({ response: 'API connection successful! Ready to help with Tech Nation guidance 🚀' });
         }
 
         console.log('Processing message:', message.substring(0, 100));
-        console.log('User profile language:', userProfile?.language);
 
         // Get guide content (Tech Nation guidance)
         let guideContent;
@@ -460,20 +326,20 @@ export default async function handler(req, res) {
         console.log('Found relevant context, length:', relevantContext.length);
 
         if (!relevantContext || relevantContext.trim().length === 0) {
-            const fallback = getFallbackResponse(message, userProfile);
+            const fallback = getFallbackResponse(message);
             return res.status(200).json({ 
                 response: fallback || 'I could not find specific information about that in the Tech Nation guidance. Could you please rephrase your question or ask about eligibility criteria, application process, evidence requirements, or timeline?'
             });
         }
 
-        // Get AI response using fallback system
+        // Generate response
         let response;
         try {
-            response = getIntelligentFallback(message, relevantContext, userProfile);
-            console.log('Response generated using fallback system, length:', response.length);
+            response = generateIntelligentResponse(message, relevantContext);
+            console.log('Response generated, length:', response.length);
         } catch (error) {
-            console.error('Fallback failed:', error);
-            const basicFallback = getFallbackResponse(message, userProfile);
+            console.error('Response generation failed:', error);
+            const basicFallback = getFallbackResponse(message);
             response = basicFallback || 'I encountered an issue processing your request. Please try asking about eligibility, process, documents, or timeline.';
         }
 
@@ -495,8 +361,7 @@ export default async function handler(req, res) {
     } catch (error) {
         console.error('Chat API Error:', error);
         return res.status(200).json({ 
-            response: 'I encountered an unexpected error. Please try again, and if the problem persists, please visit the official Tech Nation website for guidance.',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            response: 'I encountered an unexpected error. Please try again, and if the problem persists, please visit the official Tech Nation website for guidance.'
         });
     }
 }
@@ -556,24 +421,19 @@ COSTS
 }
 
 // Basic fallback responses for common questions
-function getFallbackResponse(message, userProfile) {
-    const isChinese = userProfile?.language === 'zh';
+function getFallbackResponse(message) {
     const query = message.toLowerCase();
     
-    if (query.includes('cost') || query.includes('fee') || query.includes('price') || 
-        query.includes('费用') || query.includes('价格')) {
-        
-        return isChinese ? 
-            `**Tech Nation申请费用：**\n\n• Tech Nation背书：£561\n• 签证申请：£205\n• **总计：£766**\n\n**额外费用：**\n• 医疗附加费：每年£1,035\n• 如果您在申请中包括您的伴侣或子女，他们每人需要支付£766` :
-            `**Tech Nation Application Costs:**\n\n• Tech Nation endorsement: £561\n• Visa application: £205\n• **Total: £766**\n\n**Additional Costs:**\n• Healthcare surcharge: £1,035 per year\n• If you're including your partner or children in your application, they'll each need to pay £766`;
+    if (query.includes('cost') || query.includes('fee') || query.includes('price')) {
+        return `**Tech Nation Application Costs:**\n\n• Tech Nation endorsement: £561\n• Visa application: £205\n• **Total: £766**\n\n**Additional Costs:**\n• Healthcare surcharge: £1,035 per year\n• If you're including your partner or children in your application, they'll each need to pay £766`;
     }
     
-    if (query.includes('timeline') || query.includes('time') || query.includes('long') ||
-        query.includes('时间') || query.includes('多久')) {
-        
-        return isChinese ?
-            `**Tech Nation申请时间安排：**\n\n• 证据准备：2-6个月\n• Tech Nation决定：8-12周\n• 内政部签证决定：3周（英国境外），8周（英国境内）\n• 可以支付费用获得更快的决定` :
-            `**Tech Nation Application Timeline:**\n\n• Evidence preparation: 2-6 months\n• Tech Nation decision: 8-12 weeks\n• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)• You may be able to pay to get a faster decision`;
+    if (query.includes('timeline') || query.includes('time') || query.includes('long')) {
+        return `**Tech Nation Application Timeline:**\n\n• Evidence preparation: 2-6 months\n• Tech Nation decision: 8-12 weeks\n• Home Office visa decision: 3 weeks (outside UK), 8 weeks (inside UK)\n• You may be able to pay to get a faster decision`;
+    }
+    
+    if (query.includes('eligib')) {
+        return `**Tech Nation Eligibility Requirements:**\n\n• At least 5 years of experience in digital technology sector\n• Demonstrate exceptional talent OR exceptional promise\n• Meet mandatory criteria + at least 2 optional criteria\n• Work must be IN digital technology (not just using it as a tool)\n\n**Would you like details about the specific criteria?**`;
     }
     
     return null;
