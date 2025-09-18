@@ -5,19 +5,15 @@
   "main": "api/index.js",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step required'",
-    "start": "vercel dev"
+    "build": "echo 'Static site, no build required'",
+    "start": "node api/index.js",
+    "dev": "vercel dev"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x"
   },
-  "dependencies": {
-    
-  },
-  "devDependencies": {
-    "@vercel/node": "^3.0.0"
-  },
+  "dependencies": {},
+  "devDependencies": {},
   "keywords": [
     "uk-visa",
     "tech-nation",
