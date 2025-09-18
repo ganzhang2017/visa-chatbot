@@ -288,7 +288,7 @@ export default function handler(req, res) {
                 this.addMessage('👋 Welcome! I will guide you through the UK Global Talent Visa application for Digital Technology.', 'bot');
                 
                 setTimeout(() => {
-                    this.addMessage('ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. It offers flexibility, a pathway to settlement, and freedom to change jobs or be self-employed.', 'bot');
+                    this.addMessage('ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. It offers flexibility, a pathway to settlement, and freedom to change jobs or be self-employed.Disclaimer: This is general guidance, not legal advice. For formal immigration advice, please speak with an OISC-registered adviser or solicitor.', 'bot');
                 }, 1500);
                 
                 setTimeout(() => {
