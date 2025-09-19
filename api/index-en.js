@@ -340,7 +340,7 @@ export default function handler(req, res) {
             async handleTopicChoice(topic) {
                 const topicQuestions = {
                     'eligibility': 'What are the eligibility requirements for the Digital Technology route?',
-                    'process': 'How does the Tech Nation application process work? Please include all costs.',
+                    'process': 'How does the Tech Nation application process work? It costs 766 GBP to apply.',
                     'documents': 'What documents and evidence do I need to prepare?',
                     'timeline': 'How long does the entire process take?'
                 };
