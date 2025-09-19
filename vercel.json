@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "api/chat-zh.js": {
+      "maxDuration": 60
+    },
+    "api/guide_content.js": {
+      "maxDuration": 10
+    },
+    "api/upload.js": {
+      "maxDuration": 30
+    },
+    "api/index.js": {
+      "maxDuration": 5
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/index"
+    }
+  ]
+}

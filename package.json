@@ -1,0 +1,20 @@
+{
+  "name": "chinese-visa-bot",
+  "version": "1.0.0",
+  "description": "英国全球人才签证助手 - 中文版",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^4.24.0",
+    "pdf-parse": "^1.1.1",
+    "formidable": "^3.5.1",
+    "@vercel/kv": "^1.0.1"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
