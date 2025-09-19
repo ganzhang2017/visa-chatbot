@@ -1,27 +1,33 @@
 {
   "functions": {
-    "api/chat.js": {
+    "api/chat-en.js": {
       "maxDuration": 30
+    },
+    "api/chat-zh.js": {
+      "maxDuration": 30
+    },
+    "api/guide_content.js": {
+      "maxDuration": 10
     },
     "api/upload.js": {
       "maxDuration": 30
+    },
+    "api/index-en.js": {
+      "maxDuration": 5
     }
   },
   "rewrites": [
     {
       "source": "/",
-      "destination": "/api/index"
-    }
-  ],
-  "headers": [
+      "destination": "/api/index-en"
+    },
     {
-      "source": "/api/index",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/html; charset=utf-8"
-        }
-      ]
+      "source": "/en",
+      "destination": "/api/index-en"
+    },
+    {
+      "source": "/zh",
+      "destination": "/api/index-zh"
     }
   ]
 }

@@ -171,7 +171,7 @@ ${resumeContent}
         console.log('Sending request to OpenRouter (Chinese)...');
         
         const completion = await openai.chat.completions.create({
-            model: "anthropic/claude-3.5-sonnet", // You can change this to any model available on OpenRouter
+            model: "openai/gpt-oss-120b:free", // You can change this to any model available on OpenRouter
             messages: messages,
             max_tokens: 1000,
             temperature: 0.7,
