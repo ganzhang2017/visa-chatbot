@@ -1,148 +1,95 @@
-// api/upload.js - Fixed for Vercel Serverless
+import formidable from 'formidable';
+import fs from 'fs';
+import path from 'path';
+
+// Disable default body parser for file uploads
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(req, res) {
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Cache-Control', 'no-cache');
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    // Handle preflight OPTIONS request
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  try {
+    const form = formidable({
+      maxFileSize: 10 * 1024 * 1024, // 10MB limit
+      filter: ({ mimetype }) => {
+        // Only allow PDF files
+        return mimetype && mimetype.includes('pdf');
+      },
+    });
+
+    const [fields, files] = await form.parse(req);
+    
+    const uploadedFile = files.resume?.[0];
+    
+    if (!uploadedFile) {
+      return res.status(400).json({ 
+        error: 'No file uploaded or file type not supported. Please upload a PDF file.' 
+      });
     }
 
-    // Only allow POST method
-    if (req.method !== 'POST') {
-        return res.status(405).json({ 
-            error: 'Method not allowed',
-            allowedMethods: ['POST']
-        });
+    // Check file type explicitly
+    if (!uploadedFile.mimetype?.includes('pdf')) {
+      return res.status(400).json({ 
+        error: 'Only PDF files are allowed. Please upload a PDF resume.' 
+      });
     }
 
+    // For this demo, we'll just confirm upload success
+    // In a real app, you'd process the PDF content here
+    const fileInfo = {
+      filename: uploadedFile.originalFilename,
+      size: uploadedFile.size,
+      type: uploadedFile.mimetype,
+      uploadTime: new Date().toISOString()
+    };
+
+    // Optional: Clean up temp file
     try {
-        console.log('Upload request received');
-        console.log('Request method:', req.method);
-        console.log('Content-Type:', req.headers['content-type']);
-
-        // Parse request body safely
-        let body;
-        if (typeof req.body === 'string') {
-            body = JSON.parse(req.body);
-        } else {
-            body = req.body || {};
-        }
-
-        const { content, userId, filename } = body;
-        
-        // Validate required fields
-        if (!content || typeof content !== 'string') {
-            console.log('Missing or invalid content field');
-            return res.status(400).json({ 
-                error: 'Missing or invalid content field',
-                success: false
-            });
-        }
-
-        if (!userId || typeof userId !== 'string') {
-            console.log('Missing or invalid userId field');
-            return res.status(400).json({ 
-                error: 'Missing or invalid userId field',
-                success: false
-            });
-        }
-
-        // Validate content length
-        if (content.length > 100000) { // 100KB limit for text content
-            console.log('Content too large:', content.length);
-            return res.status(413).json({ 
-                error: 'Content too large. Please upload a smaller file.',
-                success: false
-            });
-        }
-
-        // Basic content validation
-        const cleanContent = content.trim();
-        if (cleanContent.length < 50) {
-            return res.status(400).json({ 
-                error: 'Content too short. Please upload a more detailed CV/resume.',
-                success: false
-            });
-        }
-
-        // Log successful processing (in production, you'd store this in a database)
-        console.log(`✅ Resume processed for user ${userId}`);
-        console.log(`📄 Filename: ${filename || 'unknown'}`);
-        console.log(`📊 Content length: ${cleanContent.length} characters`);
-
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // For now, we'll just acknowledge successful upload
-        // In production, you would:
-        // 1. Store the content in a database (e.g., KV store, PostgreSQL)
-        // 2. Process the content to extract key information
-        // 3. Associate it with the user session
-
-        const response = {
-            success: true,
-            message: 'CV/Resume uploaded and processed successfully!',
-            userId: userId,
-            filename: filename || 'uploaded_document',
-            contentLength: cleanContent.length,
-            timestamp: new Date().toISOString(),
-            // You might include extracted insights:
-            insights: {
-                hasContact: cleanContent.toLowerCase().includes('email') || cleanContent.toLowerCase().includes('@'),
-                hasExperience: cleanContent.toLowerCase().includes('experience') || cleanContent.toLowerCase().includes('worked'),
-                hasTechSkills: cleanContent.toLowerCase().includes('software') || 
-                              cleanContent.toLowerCase().includes('developer') ||
-                              cleanContent.toLowerCase().includes('engineer') ||
-                              cleanContent.toLowerCase().includes('data') ||
-                              cleanContent.toLowerCase().includes('ai') ||
-                              cleanContent.toLowerCase().includes('machine learning'),
-                hasEducation: cleanContent.toLowerCase().includes('university') || 
-                             cleanContent.toLowerCase().includes('degree') ||
-                             cleanContent.toLowerCase().includes('bachelor') ||
-                             cleanContent.toLowerCase().includes('master'),
-                wordCount: cleanContent.split(/\s+/).length
-            }
-        };
-
-        console.log('✅ Upload successful:', {
-            userId,
-            filename,
-            contentLength: cleanContent.length
-        });
-
-        return res.status(200).json(response);
-
-    } catch (error) {
-        console.error('❌ Upload processing error:');
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-
-        // Handle specific error types
-        let errorMessage = 'Upload processing failed. Please try again.';
-        let statusCode = 500;
-
-        if (error instanceof SyntaxError && error.message.includes('JSON')) {
-            errorMessage = 'Invalid request format. Please try again.';
-            statusCode = 400;
-        } else if (error.message.includes('timeout')) {
-            errorMessage = 'Upload timed out. Please try with a smaller file.';
-            statusCode = 408;
-        }
-
-        return res.status(statusCode).json({ 
-            error: errorMessage,
-            success: false,
-            timestamp: new Date().toISOString(),
-            ...(process.env.NODE_ENV === 'development' && {
-                debug: {
-                    message: error.message,
-                    stack: error.stack
-                }
-            })
-        });
+      await fs.promises.unlink(uploadedFile.filepath);
+    } catch (cleanupError) {
+      console.warn('Failed to clean up temp file:', cleanupError);
     }
+
+    console.log('Resume uploaded successfully:', fileInfo);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Resume uploaded successfully!',
+      file: fileInfo
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ 
+        error: 'File too large. Please upload a PDF file smaller than 10MB.' 
+      });
+    }
+    
+    if (error.code === 'LIMIT_FILE_TYPE') {
+      return res.status(400).json({ 
+        error: 'Invalid file type. Please upload a PDF file only.' 
+      });
+    }
+
+    return res.status(500).json({ 
+      error: 'Upload failed. Please try again with a valid PDF file.' 
+    });
+  }
 }
