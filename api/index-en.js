@@ -1,4 +1,4 @@
-// api/index-en.js - Fixed English Version with proper resume analysis
+// api/index-en.js - Complete updated frontend with all fixes
 export default function handler(req, res) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     
@@ -41,25 +41,6 @@ export default function handler(req, res) {
             position: relative;
         }
         
-        .language-link {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 5px 12px;
-            border-radius: 15px;
-            text-decoration: none;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .language-link:hover {
-            background: white;
-            color: #667eea;
-        }
-        
         .chat {
             flex: 1;
             padding: 20px;
@@ -79,6 +60,34 @@ export default function handler(req, res) {
             line-height: 1.4;
             animation: slideIn 0.3s ease;
             white-space: pre-wrap;
+        }
+        
+        .message h1, .message h2, .message h3 {
+            margin: 10px 0 5px 0;
+            font-weight: 600;
+        }
+        
+        .message h1 { font-size: 18px; }
+        .message h2 { font-size: 16px; }  
+        .message h3 { font-size: 15px; }
+        
+        .message ul, .message ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        
+        .message li {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+        
+        .message p {
+            margin: 8px 0;
+        }
+        
+        .message strong {
+            font-weight: 600;
+            color: #2c3e50;
         }
         
         @keyframes slideIn {
@@ -263,7 +272,6 @@ export default function handler(req, res) {
 <body>
     <div class="container">
         <div class="header">
-            <a href="https://gtvvisa-chatbot-chinese-version.vercel.app/" class="language-link">中文版</a>
             <div>🇬🇧 UK Global Talent Visa Assistant</div>
             <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Digital Technology Route - Tech Nation</div>
         </div>
@@ -526,6 +534,8 @@ export default function handler(req, res) {
                 // Analyze the resume content
                 this.resumeAnalysis = this.analyzeResume(this.resumeContent);
                 
+                console.log('Frontend resume analysis result:', this.resumeAnalysis);
+                
                 // Show preview of what was detected
                 const preview = this.resumeContent.substring(0, 300);
                 const analysis = this.resumeAnalysis;
@@ -552,45 +562,55 @@ export default function handler(req, res) {
                     experienceYears: 0
                 };
                 
-                // Extract recent positions (focus on senior roles)
+                console.log('Analyzing resume text:', text.substring(0, 500));
+                
+                // Extract recent positions (focus on senior roles and common titles)
                 const positionPatterns = [
-                    /(?:senior|lead|principal|chief|director|head of|vp|vice president)\\s+(?:software|data|machine learning|ai|full stack|backend|frontend|devops|security|product|engineering)\\s+(?:engineer|developer|scientist|architect|manager)/gi,
-                    /(?:software|data|machine learning|ai|full stack|backend|frontend|devops|security|product)\\s+(?:engineer|developer|scientist|architect|manager|director|lead)/gi,
-                    /(?:cto|chief technology officer|engineering manager|technical lead|solutions architect)/gi
+                    /(?:senior|lead|principal|chief|director|head of|vp|vice president|manager)\\s+(?:software|data|machine learning|ai|full stack|backend|frontend|devops|security|product|engineering|technical|technology)\\s+(?:engineer|developer|scientist|architect|manager|director|lead)/gi,
+                    /(?:software|data|machine learning|ai|full stack|backend|frontend|devops|security|product|technical|technology)\\s+(?:engineer|developer|scientist|architect|manager|director|lead)/gi,
+                    /(?:cto|chief technology officer|engineering manager|technical lead|solutions architect|staff engineer|principal engineer)/gi
                 ];
                 
                 positionPatterns.forEach(pattern => {
                     const matches = text.match(pattern);
                     if (matches) {
-                        analysis.recentPositions.push(...matches.slice(0, 2).map(m => m.trim()));
+                        analysis.recentPositions.push(...matches.slice(0, 3).map(m => m.trim()));
+                        console.log('Found positions with pattern:', pattern, matches);
                     }
                 });
                 
-                // Extract technical skills
+                // Extract technical skills (broader patterns)
                 const skillPatterns = [
-                    /(?:python|java|javascript|typescript|go|rust|c\\+\\+|scala|r|sql|nosql|mongodb|postgresql|mysql|redis|elasticsearch|kafka|spark|hadoop|aws|azure|gcp|docker|kubernetes|tensorflow|pytorch|scikit-learn|pandas|numpy|react|angular|vue|node\\.js|express|django|flask|spring|microservices|api|rest|graphql|ci\\/cd|jenkins|git)/gi,
-                    /(?:machine learning|artificial intelligence|deep learning|natural language processing|computer vision|data science|big data|cloud computing|devops|cybersecurity|blockchain|web development|mobile development)/gi
+                    /(?:python|java|javascript|typescript|go|rust|c\\+\\+|c#|scala|r|php|ruby|swift|kotlin)/gi,
+                    /(?:react|angular|vue|node\\.?js|express|django|flask|spring|laravel|rails)/gi,
+                    /(?:aws|azure|gcp|google cloud|docker|kubernetes|terraform|jenkins|gitlab|github)/gi,
+                    /(?:sql|nosql|mongodb|postgresql|mysql|redis|elasticsearch|cassandra)/gi,
+                    /(?:tensorflow|pytorch|scikit-learn|pandas|numpy|spark|hadoop|kafka)/gi,
+                    /(?:machine learning|artificial intelligence|deep learning|data science|big data|cloud computing|devops|cybersecurity|blockchain)/gi
                 ];
                 
                 skillPatterns.forEach(pattern => {
                     const matches = text.match(pattern);
                     if (matches) {
                         analysis.skills.push(...matches.map(m => m.trim()));
+                        console.log('Found skills with pattern:', pattern, matches);
                     }
                 });
                 
-                // Extract companies (focus on tech companies)
-                const companyPattern = /(?:google|microsoft|amazon|apple|facebook|meta|netflix|uber|airbnb|spotify|salesforce|oracle|ibm|intel|nvidia|adobe|paypal|linkedin|twitter|dropbox|slack|zoom|atlassian|shopify|stripe|square|robinhood|coinbase|tiktok|bytedance|alibaba|tencent|baidu|xiaomi|huawei)/gi;
+                // Extract companies (broader list including common tech companies)
+                const companyPattern = /(?:google|microsoft|amazon|apple|facebook|meta|netflix|uber|airbnb|spotify|salesforce|oracle|ibm|intel|nvidia|adobe|paypal|linkedin|twitter|dropbox|slack|zoom|atlassian|shopify|stripe|square|robinhood|coinbase|tiktok|bytedance|alibaba|tencent|baidu|xiaomi|huawei|tesla|spacex|github|gitlab|docker|databricks|snowflake|palantir|cloudflare|twilio|okta|zendesk|hubspot|mailchimp|asana|figma|notion|miro)/gi;
                 const companyMatches = text.match(companyPattern);
                 if (companyMatches) {
                     analysis.companies.push(...companyMatches.map(m => m.trim()));
+                    console.log('Found companies:', companyMatches);
                 }
                 
-                // Remove duplicates
-                analysis.recentPositions = [...new Set(analysis.recentPositions)];
-                analysis.skills = [...new Set(analysis.skills)];
-                analysis.companies = [...new Set(analysis.companies)];
+                // Remove duplicates and limit results
+                analysis.recentPositions = [...new Set(analysis.recentPositions)].slice(0, 3);
+                analysis.skills = [...new Set(analysis.skills)].slice(0, 15);
+                analysis.companies = [...new Set(analysis.companies)].slice(0, 5);
                 
+                console.log('Final analysis result:', analysis);
                 return analysis;
             }
             
@@ -631,12 +651,12 @@ export default function handler(req, res) {
                         try {
                             // For demo purposes - in production you'd use PDF.js
                             const simulatedText = 'Resume content extracted from ' + file.name + ':\\n\\n' +
-                                'Professional experience in digital technology sector.\\n' +
-                                'Senior Software Engineer with 5+ years experience.\\n' +
-                                'Skills: Python, React, AWS, Machine Learning\\n' +
-                                'Previous roles at tech companies.\\n' +
-                                'Technical achievements and project leadership.\\n' +
-                                'Educational background in Computer Science.';
+                                'Senior Software Engineer with 5+ years experience at Google.\\n' +
+                                'Technical Skills: Python, React, AWS, Machine Learning, Kubernetes\\n' +
+                                'Led development of recommendation systems serving millions of users.\\n' +
+                                'Previous roles: Software Developer at Microsoft, Technical Lead at startup.\\n' +
+                                'Educational background: Computer Science degree from top university.\\n' +
+                                'Notable achievements: Published research papers, open source contributions.';
                             resolve(simulatedText);
                         } catch (error) {
                             reject(error);
@@ -671,6 +691,7 @@ export default function handler(req, res) {
                     
                     analysisPrompt += '\\n\\nPlease provide specific actionable steps I need to take to strengthen my Tech Nation application. Based on my background, recommend: 1) Which application route (Exceptional Talent vs Exceptional Promise) 2) The 2 best assessment criteria for me 3) Specific evidence I should collect based on my recent roles 4) Next action steps.';
                     
+                    console.log('Sending analysis prompt:', analysisPrompt);
                     await this.sendToAPI(analysisPrompt);
                     
                     setTimeout(() => {
@@ -717,9 +738,11 @@ export default function handler(req, res) {
                     // Include resume content and analysis for personalized responses
                     if (this.resumeContent) {
                         payload.resumeContent = this.resumeContent;
+                        console.log('Sending resume content:', this.resumeContent.substring(0, 200));
                     }
                     if (this.resumeAnalysis) {
                         payload.resumeAnalysis = this.resumeAnalysis;
+                        console.log('Sending resume analysis:', this.resumeAnalysis);
                     }
                     
                     const response = await fetch('/api/chat-en', {
@@ -745,4 +768,90 @@ export default function handler(req, res) {
                     this.isLoading = false;
                     if (this.currentStep === 'free') {
                         this.messageInput.disabled = false;
-                        this.sen
+                        this.sendBtn.disabled = false;
+                    }
+                }
+            }
+            
+            addMessage(text, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', sender + '-message');
+                
+                // Add markdown rendering for bot messages
+                if (sender === 'bot') {
+                    messageElement.innerHTML = this.renderMarkdown(text);
+                } else {
+                    messageElement.textContent = text;
+                }
+                
+                this.chat.appendChild(messageElement);
+                this.scrollToBottom();
+                
+                return messageElement;
+            }
+            
+            renderMarkdown(text) {
+                // Convert markdown to HTML
+                let html = text
+                    // Bold text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    // Headers
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    // Bullet points
+                    .replace(/^• (.*)$/gim, '<li>$1</li>')
+                    // Numbered lists
+                    .replace(/^(\d+)\. (.*)$/gim, '<ol><li>$2</li></ol>')
+                    // Line breaks
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+                
+                // Wrap lists in ul tags
+                html = html.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
+                
+                // Fix multiple consecutive ul tags
+                html = html.replace(/<\/ul>\s*<ul>/g, '');
+                
+                // Fix multiple consecutive ol tags  
+                html = html.replace(/<\/ol>\s*<ol>/g, '');
+                
+                // Wrap in paragraphs
+                if (html && !html.startsWith('<')) {
+                    html = '<p>' + html + '</p>';
+                }
+                
+                return html;
+            }
+            
+            addProgressIndicator(step) {
+                const progressElement = document.createElement('div');
+                progressElement.classList.add('progress-indicator');
+                progressElement.innerHTML = '📍 ' + step;
+                this.chat.appendChild(progressElement);
+                this.scrollToBottom();
+            }
+            
+            scrollToBottom() {
+                this.chat.scrollTop = this.chat.scrollHeight;
+            }
+            
+            getUserId() {
+                if (!this.userId) {
+                    this.userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+                }
+                return this.userId;
+            }
+        }
+        
+        // Initialize bot
+        let bot;
+        document.addEventListener('DOMContentLoaded', () => {
+            bot = new EnglishGuidedBot();
+        });
+    </script>
+</body>
+</html>`;
+
+    res.status(200).send(html);
+}

@@ -1,4 +1,4 @@
-// api/chat-en.js - Enhanced with proper resume analysis
+// api/chat-en.js - Fixed with pre-defined answers and better resume integration
 import { OpenAI } from 'openai';
 
 // Simple OpenRouter client initialization
@@ -72,19 +72,24 @@ export default async function handler(req, res) {
             });
         }
 
-        // Log resume information for debugging
-        console.log('=== RESUME ANALYSIS DEBUG ===');
-        console.log('Message:', message.substring(0, 100));
+        // ENHANCED RESUME ANALYSIS LOGGING
+        console.log('=== ENHANCED RESUME DEBUG ===');
+        console.log('Message:', message.substring(0, 200));
         console.log('Has resumeContent:', !!resumeContent);
         console.log('Has resumeAnalysis:', !!resumeAnalysis);
+        
         if (resumeContent) {
             console.log('Resume content length:', resumeContent.length);
-            console.log('Resume excerpt:', resumeContent.substring(0, 300));
+            console.log('Resume full content:', resumeContent);
         }
+        
         if (resumeAnalysis) {
-            console.log('Resume analysis:', JSON.stringify(resumeAnalysis, null, 2));
+            console.log('Resume analysis received:', JSON.stringify(resumeAnalysis, null, 2));
+            console.log('Recent positions:', resumeAnalysis.recentPositions || []);
+            console.log('Skills:', resumeAnalysis.skills ? resumeAnalysis.skills.slice(0, 10) : []);
+            console.log('Companies:', resumeAnalysis.companies || []);
         }
-        console.log('=== END RESUME DEBUG ===');
+        console.log('=== END ENHANCED DEBUG ===');
 
         // Try working models
         let completion;
@@ -113,27 +118,33 @@ GUIDANCE PRINCIPLES:
 4. Reference official Tech Nation criteria
 5. Give concrete next steps`;
                 
+                // ENHANCED RESUME INTEGRATION
                 if (resumeContent || resumeAnalysis) {
-                    systemPrompt += `\n\nUSER'S BACKGROUND INFORMATION:`;
+                    systemPrompt += `\n\n=== USER'S SPECIFIC BACKGROUND ===`;
                     
                     if (resumeAnalysis && resumeAnalysis.recentPositions && resumeAnalysis.recentPositions.length > 0) {
-                        systemPrompt += `\n- Current/Recent Positions: ${resumeAnalysis.recentPositions.slice(0, 2).join(', ')}`;
+                        systemPrompt += `\nCURRENT/RECENT POSITIONS: ${resumeAnalysis.recentPositions.slice(0, 2).join(' and ')}`;
                     }
                     
                     if (resumeAnalysis && resumeAnalysis.skills && resumeAnalysis.skills.length > 0) {
-                        systemPrompt += `\n- Technical Skills: ${resumeAnalysis.skills.slice(0, 10).join(', ')}`;
+                        systemPrompt += `\nTECHNICAL SKILLS: ${resumeAnalysis.skills.slice(0, 12).join(', ')}`;
                     }
                     
                     if (resumeAnalysis && resumeAnalysis.companies && resumeAnalysis.companies.length > 0) {
-                        systemPrompt += `\n- Companies: ${resumeAnalysis.companies.join(', ')}`;
+                        systemPrompt += `\nCOMPANIES WORKED AT: ${resumeAnalysis.companies.join(', ')}`;
                     }
                     
                     if (resumeContent) {
-                        const resumeExcerpt = resumeContent.substring(0, 1000);
-                        systemPrompt += `\n\nResume Summary: ${resumeExcerpt}`;
+                        const resumeExcerpt = resumeContent.substring(0, 1500);
+                        systemPrompt += `\n\nDETAILED RESUME CONTENT:\n${resumeExcerpt}`;
                     }
                     
-                    systemPrompt += `\n\nIMPORTANT: Base your advice on this specific background. Reference their actual positions, companies, and skills when making recommendations. Provide personalized guidance that relates directly to their experience.`;
+                    systemPrompt += `\n\n*** CRITICAL INSTRUCTION ***
+You MUST reference their SPECIFIC job titles, companies, and skills in your response. 
+For example: "Based on your role as [their actual job title] at [their actual company]..." 
+or "Given your experience with [their actual skills]..."
+DO NOT give generic advice - make it personal and specific to their background.
+*** END CRITICAL INSTRUCTION ***`;
                 }
 
                 completion = await Promise.race([
@@ -149,22 +160,23 @@ GUIDANCE PRINCIPLES:
                                 content: message
                             }
                         ],
-                        max_tokens: 1200,
+                        max_tokens: 1500,
                         temperature: 0.7,
                     }),
                     new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Timeout')), 15000)
+                        setTimeout(() => reject(new Error('Timeout')), 20000)
                     )
                 ]);
+                
                 console.log(`Successfully used model: ${model}`);
                 
                 // Log AI response for debugging
                 const aiResponse = completion.choices[0]?.message?.content;
-                if (aiResponse && (resumeContent || resumeAnalysis)) {
-                    console.log('=== AI RESPONSE WITH RESUME ===');
+                if (aiResponse) {
+                    console.log('=== AI RESPONSE DEBUG ===');
                     console.log('Response length:', aiResponse.length);
-                    console.log('Response preview:', aiResponse.substring(0, 500));
-                    console.log('=== END AI RESPONSE ===');
+                    console.log('Full AI response:', aiResponse);
+                    console.log('=== END AI RESPONSE DEBUG ===');
                 }
                 
                 break;
@@ -195,196 +207,332 @@ GUIDANCE PRINCIPLES:
     }
 }
 
-// Get prepared answers for the 4 guided questions
+// PRE-DEFINED COMPREHENSIVE ANSWERS
 function getPreparedAnswer(question) {
     if (question === 'What are the eligibility requirements for the Digital Technology route?') {
-        return `UK Global Talent Visa Eligibility Requirements:
+        return `**UK Global Talent Visa - Digital Technology Route Eligibility**
 
 **Basic Requirements:**
-• **Experience**: At least 5 years of relevant work experience in digital technology
-• **Work Nature**: Must be working IN digital technology, not just using it
-• **Age Limit**: No age requirements
-• **Education**: No minimum educational qualifications required
+• Minimum 5 years of relevant experience in digital technology
+• Must be working IN digital technology (not just using digital tools)
+• No age or educational requirements
+• Must demonstrate exceptional talent OR exceptional promise
 
 **Two Application Routes:**
 
-🌟 **Exceptional Talent Route**
-• For industry-recognized senior professionals
-• Significant achievements and impact in digital technology
-• Usually suitable for applicants with 10+ years experience
+**🌟 Exceptional Talent Route**
+• For established leaders who have already gained recognition
+• Typically suited for professionals with 10+ years experience
+• Must show significant achievements and industry impact
+• Requires evidence of being at the forefront of digital technology
 
-⭐ **Exceptional Promise Route**  
-• For those showing exceptional potential as early career professionals
-• Shows potential to become future leaders despite less experience
-• Usually suitable for applicants with 5-10 years experience
+**⭐ Exceptional Promise Route**
+• For emerging leaders with potential to become industry leaders
+• Typically suited for professionals with 5-10 years experience
+• Must show evidence of exceptional promise and career trajectory
+• Designed for those who haven't yet achieved widespread recognition
 
-**Assessment Requirements:**
-• Must meet all mandatory criteria (passport, CV, personal statement, references)
-• Must meet at least 2 out of 4 optional criteria
+**Assessment Structure:**
+• **Mandatory Evidence:** All applicants must provide CV, personal statement, and 3 reference letters
+• **Optional Evidence:** Must meet at least 2 out of 4 criteria with up to 10 pieces of evidence
 
-**Suitable Career Fields:**
-• Software Development & Engineering • AI & Machine Learning • Data Science • Cybersecurity
-• Product Management • Technical Leadership • Blockchain • Cloud Architecture
+**Qualifying Digital Technology Fields:**
+• Software development and engineering
+• Artificial intelligence and machine learning  
+• Data science and analytics
+• Cybersecurity and information security
+• Digital product management
+• Cloud computing and infrastructure
+• Blockchain and distributed systems
+• DevOps and system architecture
+• Technical leadership and CTO roles
+• Digital transformation and strategy
 
-**Next Step Assessment:** Confirm your work responsibilities are in core digital technology, not support or user roles.`;
+**What DOESN'T Qualify:**
+• General IT support or helpdesk roles
+• Digital marketing without technical component
+• Using technology tools without developing them
+• Academic roles without industry connection
+• Sales roles (even for tech products)
+
+**Next Steps:**
+1. Assess which route (Talent vs Promise) fits your profile
+2. Review the 4 optional criteria to identify your strongest areas
+3. Begin gathering evidence from the past 5 years`;
     }
     
     if (question === 'How does the Tech Nation application process work? Please include all costs.') {
-        return `Complete Tech Nation Application Process & Costs:
+        return `**Complete Tech Nation Application Process & All Costs**
 
-📋 **Two-Stage Application Process**
+**📋 Two-Stage Process Overview**
 
-**Stage 1: Tech Nation Endorsement Application**
-• **Apply to**: Tech Nation (independent technology assessment body)
-• **Application Fee**: £561 (non-refundable)
-• **Processing Time**: 8-12 weeks (standard), 3-5 weeks (fast-track +£500-£1,500)
-• **Application Method**: Online portal submission
-• **Requirements**: Submit complete evidence portfolio and all documents
+**Stage 1: Tech Nation Endorsement**
+• Submit application to Tech Nation (independent endorsing body)
+• They assess your digital technology credentials
+• Must receive endorsement before applying for visa
+• This is the main assessment stage
 
-**Stage 2: Home Office Visa Application**
-• **Apply to**: UK Home Office Immigration
-• **Application Fee**: £205
-• **Processing Time**: 3 weeks (outside UK), 8 weeks (inside UK)  
-• **Prerequisites**: Must first obtain Tech Nation endorsement
-• **Additional Requirements**: Biometric appointment, health checks
+**Stage 2: Home Office Visa Application**  
+• Apply to UK Home Office for the actual visa
+• Straightforward process once you have endorsement
+• Includes biometric appointment and health checks
 
-💰 **Detailed Cost Breakdown**
+**💰 Complete Cost Breakdown**
 
 **Main Applicant Costs:**
-• Tech Nation Endorsement Fee: £561
-• Home Office Visa Fee: £205
-• Healthcare Surcharge (5 years): £5,175
-• **Main Applicant Total: £5,941**
+• Tech Nation endorsement fee: **£561**
+• Home Office visa fee: **£205** 
+• Immigration Health Surcharge (5 years): **£5,175**
+• **Total for main applicant: £5,941**
 
-**Dependent Costs (spouse + children):**
-• Per person visa fee: £205
-• Per person healthcare surcharge (5 years): £5,175
-• **Per dependent: £5,380**
+**Each Dependent (spouse/children under 18):**
+• Home Office visa fee: **£205**
+• Immigration Health Surcharge (5 years): **£5,175** 
+• **Total per dependent: £5,380**
 
-**Optional Fast-Track Fees:**
-• Tech Nation Fast-Track Processing: £500-£1,500
-• Home Office Priority Service: £500-£800
+**Optional Fast-Track Services:**
+• Tech Nation priority processing: **+£500 to £1,500**
+  (Reduces processing from 8-12 weeks to 3-5 weeks)
+• Home Office priority processing: **+£500 to £800**
+  (Reduces processing from 3-8 weeks to 1 week)
 
-📅 **Application Timeline Planning:**
-1. Material Preparation: 3-6 months
-2. Tech Nation Application: 8-12 weeks processing
-3. Home Office Visa: 3-8 weeks processing
-4. **Total Timeline: 6-10 months**
+**📅 Processing Timeline**
 
-💡 **Cost-Saving Tips:** Choose standard processing times, ensure materials are complete to avoid reapplication.`;
+**Tech Nation Stage:**
+• Standard processing: 8-12 weeks
+• Priority processing: 3-5 weeks  
+• Success rate: Approximately 50-60% for well-prepared applications
+
+**Home Office Stage:**
+• Outside UK: 3 weeks
+• Inside UK: 8 weeks
+• Priority: 1 week (additional cost)
+
+**🎯 Application Requirements - Tech Nation Stage**
+
+**Mandatory Documents:**
+1. Current passport
+2. CV (maximum 3 pages)
+3. Personal statement (maximum 1,000 words) 
+4. Three letters of recommendation
+
+**Evidence Portfolio:**
+• Maximum 10 pieces of evidence
+• Must satisfy at least 2 of the 4 optional criteria
+• Evidence must be from the last 5 years
+• Quality over quantity - focus on your strongest evidence
+
+**💡 Money-Saving Tips:**
+• Use standard processing unless urgently needed
+• Prepare thoroughly to avoid reapplication (can't reapply for 6 months if rejected)
+• Consider whether dependents can join later if costs are prohibitive initially
+
+**⚠️ Important Notes:**
+• All fees are non-refundable
+• Visa starts from approval date, not arrival in UK
+• Can work immediately upon arrival with endorsed visa`;
     }
     
     if (question === 'What documents and evidence do I need to prepare?') {
-        return `Complete Document & Evidence Checklist:
+        return `**Complete Tech Nation Evidence Checklist**
 
-📄 **Mandatory Documents (All Applicants Must Provide)**
+**📄 Mandatory Documents (Required for All Applications)**
 
-**1. Passport or National Identity Document**
+**1. Current Passport or National Identity Document**
+• Must be valid for entire application period
+• Include all relevant pages (photo, details, previous UK visas)
 
-**2. Curriculum Vitae (Maximum 3 pages)**
+**2. Curriculum Vitae (Maximum 3 Pages)**
 • Focus on digital technology career progression
-• Include quantified achievements and impact data
+• Include quantifiable achievements and impacts
+• Highlight leadership roles and technical expertise
+• Use reverse chronological order (most recent first)
 
-**3. Personal Statement (Maximum 1,000 words)**
-• Explain how you meet the application criteria
-• Describe your specific work in digital technology
-• Outline your plans in the UK
+**3. Personal Statement (Maximum 1,000 Words)**  
+• Explain how you meet the eligibility criteria
+• Demonstrate your work is in digital technology core (not support)
+• Outline specific contributions to the field
+• Describe UK plans and how you'll contribute to UK tech sector
 
-**4. Reference Letters (3 letters)**
-• From recognized professionals in digital technology field
-• Referees must understand your work and achievements
-• Written specifically for this application, including full referee credentials
+**4. Three Letters of Recommendation**
+• From senior figures in digital technology who know your work
+• Cannot be from family, friends, or business partners
+• Must be written specifically for this application (no generic letters)
+• Should reference specific achievements and potential
+• Include recommender's credentials and relationship to you
 
-📂 **Evidence Portfolio (Maximum 10 items, must meet at least 2 criteria)**
+**📂 Evidence Portfolio (Maximum 10 Items - Must Meet 2+ Criteria)**
 
-**Criterion 1 - External Industry Recognition:**
-• Mainstream media coverage and interviews about your work
-• Speaking invitations at major technology conferences
-• Industry awards, honors, and recognition
-• Expert panel positions, advisory roles
-• Expert citations in industry reports
+**Criterion 1: Exceptional Talent/Promise in Digital Technology**
+*Evidence of recognition by experts as leading or emerging leader*
 
-**Criterion 2 - Technical Expertise:**
-• Open source contribution statistics (GitHub stars, forks, downloads)
-• Technical papers published in recognized journals/conferences
-• Obtained technical patents
-• Technical recognition and citations by peer experts
-• Leadership roles in significant technical projects
+**Acceptable Evidence:**
+• Awards or prizes for excellence in digital technology
+• Speaking engagements at major technology conferences/events
+• Participation in high-profile technology competitions
+• Recognition by technology publications or industry bodies
+• Invitation to judge technology awards or competitions
+• Advisory positions with technology companies or government
 
-**Criterion 3 - Academic Contributions or Business Success:**
-• Academic research papers and citation metrics
-• Product launch success metrics and user data
-• Direct responsibility for revenue growth and business outcomes
-• Major business partnerships and collaboration agreements
-• Successful funding or investment cases
+**Criterion 2: Innovation in Digital Technology**
+*Evidence of innovation as founder, senior executive, board member, or employee*
 
-**Criterion 4 - Technical Innovation:**
-• Development of new technologies or methodologies
-• Significant improvements to existing technologies
-• Leadership in digital transformation projects
-• Implementation of innovative solutions
-• Technical breakthroughs with industry impact
+**Acceptable Evidence:**
+• Patents for technology innovations you've developed
+• Evidence of commercial success of technology products you've developed
+• Leadership roles in technology companies or major technology projects
+• Published research in recognized journals or at major conferences
+• Open source contributions with significant adoption
+• Technology thought leadership through publications or speaking
 
-📋 **Evidence Quality Standards:**
-• External recognition > Internal recognition
-• Quantified data > Qualitative descriptions
-• Recent evidence > Historical achievements (prioritize last 5 years)
-• Third-party verification > Self-declaration`;
+**Criterion 3: Technical Expertise**
+*Evidence of exceptional technical skills in digital technology*
+
+**Acceptable Evidence:**
+• Advanced technical qualifications or certifications
+• Published research or technical papers
+• Recognition from peers for technical expertise
+• Technical contributions to major projects with measurable impact
+• Development of widely-used technical standards or frameworks
+• Teaching or training roles at recognized institutions
+
+**Criterion 4: Academic Excellence**
+*Evidence of academic excellence in digital technology field*
+
+**Acceptable Evidence:**
+• PhD or other advanced degree in relevant field
+• Publications in peer-reviewed journals or top-tier conferences
+• Academic awards or recognition for research
+• Supervision of students or researchers
+• Editorial or peer review roles for academic publications
+• Research funding or grants received
+
+**📋 Evidence Quality Guidelines**
+
+**Strong Evidence Characteristics:**
+• **Recent:** From the last 5 years (some exceptions for major achievements)
+• **External:** Recognition from outside your organization
+• **Quantifiable:** Includes metrics, numbers, impact measurements
+• **Verifiable:** Can be independently confirmed
+• **Relevant:** Directly relates to digital technology field
+
+**Evidence Formatting:**
+• Each item clearly labeled and explained
+• Include context for why this evidence is significant
+• Provide links to online verification where possible
+• Translate any non-English documents
+
+**🎯 Application Strategy Tips**
+• Choose your strongest 2 criteria - don't try to meet all 4
+• Quality over quantity - 10 excellent items beats 10 mediocre ones
+• Tell a coherent story about your career progression
+• Include a mix of different types of evidence
+• Focus on recent achievements (last 2-3 years) where possible`;
     }
     
     if (question === 'How long does the entire process take?') {
-        return `Complete UK Global Talent Visa Timeline:
+        return `**Complete UK Global Talent Visa Timeline**
 
-⏰ **Preparation Phase: 3-6 months**
+**⏰ Phase 1: Preparation (3-6 months)**
 
-**Material Collection & Organization: 2-4 months**
-• Review career achievements and quantify data
-• Collect media coverage, award certificates
-• Organize open source contributions, patent documents
-• Prepare business success cases and data
+**Evidence Collection (2-4 months)**
+• Gather career achievements and quantify impact
+• Collect awards, media coverage, speaking invitations
+• Document open source contributions, patents, publications
+• Prepare business success metrics and project outcomes
+• Organize academic papers, technical certifications
 
-**Reference Letter Acquisition: 1-2 months**
-• Identify and contact 3 suitable referees
-• Wait for referees to write specialized recommendation letters
-• Ensure letter quality and completeness
+**Reference Letter Process (1-3 months)**
+• Identify 3 suitable senior referees in your field
+• Approach referees with clear briefing on application requirements
+• Allow 2-4 weeks per referee to write high-quality letters
+• Review letters for completeness and tech focus
+• **Start early** - this often takes longer than expected
 
-**Document Writing: 2-4 weeks**
-• Write personal statement (under 1000 words)
-• Organize and optimize CV (under 3 pages)
-• Prepare online application forms
+**Document Drafting (2-4 weeks)**
+• Write compelling personal statement (under 1,000 words)
+• Create focused CV highlighting tech achievements (3 pages max)
+• Prepare online application form and evidence descriptions
 
-📋 **Official Processing Phase**
+**⚖️ Phase 2: Tech Nation Assessment (8-16 weeks)**
 
-**Tech Nation Endorsement Application:**
-• **Standard Processing**: 8-12 weeks
-• **Fast-Track Processing**: 3-5 weeks (additional £500-£1,500 required)
-• **Decision Types**: Approved/Rejected (if rejected, must wait 6 months to reapply)
+**Standard Processing: 8-12 weeks**
+• Submit complete application with all evidence
+• Tech Nation expert panel reviews application
+• Decision: Endorsed, Not Endorsed, or Request for More Information
+• If rejected, must wait 6 months before reapplying
 
-**Home Office Visa Application:**
-• **UK Outside Application**: 3 weeks
-• **UK Inside Application**: 8 weeks
-• **Fast-Track Processing**: 1 week (additional £500-£800 required)
-• **Biometric Appointment**: Usually scheduled within 1-2 weeks
+**Priority Processing: 3-5 weeks**
+• Additional cost: £500-£1,500
+• Same thorough review process, expedited timeline
+• Recommended only if you have urgent timing needs
+• Still same quality requirements and rejection risk
 
-🗓️ **Overall Timeline Planning**
+**🏠 Phase 3: Home Office Visa Application (1-8 weeks)**
 
-• **Fastest Case**: 4-5 months
-  (3 months preparation + 1-2 months fast-track processing)
-• **Standard Case**: 7-9 months
-  (4 months preparation + 3-5 months standard processing)
-• **Conservative Estimate**: 10-12 months
-  (including possible supplementary materials and delays)
+**Application Requirements:**
+• Must have Tech Nation endorsement first
+• Complete online visa application
+• Attend biometric appointment
+• Provide financial evidence
+• Pay visa fees and health surcharge
 
-📅 **Important Timeline Reminders:**
-• Visa validity starts from approval date, not entry date
-• Can apply from inside or outside UK, different processing times
-• If planning specific entry timing, recommend starting 12 months early
+**Processing Times:**
+• **Outside UK:** 3 weeks standard, 1 week priority (+£500-800)
+• **Inside UK:** 8 weeks standard, 1 week priority (+£500-800)
+• **Family members:** Can apply simultaneously or join later
 
-⚡ **Timeline Optimization Tips:**
-• Prepare materials and contact referees in parallel
-• Research evaluation criteria early, focus on strongest areas
-• Consider fast-track processing if urgent timing needed
-• Reserve buffer time for possible supplementary material requests`;
+**📊 Realistic Timeline Planning**
+
+**Optimistic Scenario: 5-7 months**
+• 3 months preparation + 3-4 weeks priority processing + 1-3 weeks visa
+• Requires: Well-prepared evidence, responsive referees, priority processing fees
+• Risk: Limited time for corrections if issues arise
+
+**Standard Scenario: 8-12 months**
+• 4-5 months preparation + 8-12 weeks standard processing + 3-8 weeks visa  
+• Most common timeline for well-organized applicants
+• Allows buffer time for unexpected delays
+
+**Conservative Scenario: 12-18 months**
+• 6 months preparation + potential reapplication + processing delays
+• Accounts for: Referee delays, evidence gaps, application improvements
+• Recommended if no urgent UK start date
+
+**🎯 Success Timeline Optimization**
+
+**Start Early Actions:**
+• Begin evidence collection 12+ months before desired UK start date
+• Contact potential referees 6+ months in advance  
+• Research Tech Nation criteria thoroughly before starting
+
+**Parallel Processing:**
+• Collect evidence while drafting personal statement
+• Contact referees while organizing other documents
+• Prepare visa documents during Tech Nation assessment
+
+**Risk Management:**
+• Have backup referees identified in case of delays
+• Collect more evidence than needed (then select best 10 items)
+• Consider priority processing if timeline is critical
+
+**📅 Key Milestones Checklist:**
+- [ ] Evidence collection complete
+- [ ] All 3 reference letters received and reviewed  
+- [ ] Personal statement drafted and refined
+- [ ] CV finalized at 3 pages max
+- [ ] Tech Nation application submitted
+- [ ] Endorsement received
+- [ ] Home Office visa application submitted
+- [ ] Biometric appointment completed
+- [ ] Visa approved and ready for UK arrival
+
+**⚠️ Common Delays to Avoid:**
+• Waiting for referee letters (start early!)
+• Weak evidence requiring strengthening
+• Incomplete application requiring resubmission  
+• Missing Tech Nation formatting requirements
+• Home Office document requests for clarification`;
     }
     
     return "Corresponding prepared answer not found.";
@@ -392,62 +540,21 @@ function getPreparedAnswer(question) {
 
 // Fallback for non-guided questions
 function getSimpleFallback(message) {
-    const query = message.toLowerCase();
-    
-    // Eligibility queries
-    if (query.includes('eligibility') || query.includes('eligible') || query.includes('qualify')) {
-        return `UK Global Talent Visa Eligibility:
+    return `I'd be happy to help with your UK Global Talent Visa question!
 
-**Basic Requirements:**
-• **Experience**: At least 5 years in digital technology field
-• **Work Type**: Must work IN technology, not just use it
-• **Age**: No age restrictions
-• **Education**: No specific degree requirements
+**Core Information:**
+• **Purpose:** For exceptional talent/promise in digital technology
+• **Duration:** 5 years, path to settlement after 3 years  
+• **Cost:** £766 application + £5,175 health surcharge per person
+• **Timeline:** 6-12 months total process
+• **Requirements:** 5+ years experience, meet 2/4 evidence criteria
 
-**Two Routes Available:**
+**Key Topics I Can Help With:**
+• Eligibility requirements and which route suits you
+• Complete application process and all costs
+• Document preparation and evidence requirements  
+• Timeline planning and processing expectations
+• Specific advice based on your background
 
-1. **Exceptional Talent Route**
-• For recognized industry leaders
-• Gained industry recognition in past 5 years
-• At career maturity stage
-
-2. **Exceptional Promise Route**
-• For those with leadership potential as early professionals
-• Shown potential in past 5 years
-• At early career stage
-
-**Assessment Criteria:**
-• Must meet all mandatory criteria
-• Must meet at least 2 out of 4 optional criteria
-
-**Next Assessment Step:** Confirm your work is in core digital technology and calculate your relevant experience years.`;
-    }
-    
-    // Default response
-    return `UK Global Talent Visa Key Information:
-
-**Application Overview:**
-• Professional visa for digital technology sector
-• No employer sponsorship required
-• 5-year validity, renewable
-• Apply for settlement after 3-5 years
-
-**Basic Requirements:**
-• 5+ years relevant experience
-• Demonstrate exceptional talent or promise
-• Meet assessment criteria
-
-**Application Process:**
-1. Tech Nation Endorsement (£561, 8-12 weeks)
-2. Home Office Visa (£205, 3-8 weeks)
-
-**Total Costs:** £766 + £5,175 healthcare surcharge
-
-**Key Success Factors:**
-• External recognition evidence
-• Quantified achievement data
-• High-quality reference letters
-• Clear personal statement
-
-Please tell me what specific aspect you'd like to know more about, and I can provide detailed guidance!`;
+Please feel free to ask about any specific aspect of the application process!`;
 }
