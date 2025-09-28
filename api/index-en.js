@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // api/index-en.js - Complete updated frontend with all fixes
+=======
+// api/index-en.js - English Version Frontend
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
 export default function handler(req, res) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     
@@ -41,6 +45,28 @@ export default function handler(req, res) {
             position: relative;
         }
         
+<<<<<<< HEAD
+=======
+        .language-link {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 12px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .language-link:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
         .chat {
             flex: 1;
             padding: 20px;
@@ -62,6 +88,7 @@ export default function handler(req, res) {
             white-space: pre-wrap;
         }
         
+<<<<<<< HEAD
         .message h1, .message h2, .message h3 {
             margin: 10px 0 5px 0;
             font-weight: 600;
@@ -90,6 +117,8 @@ export default function handler(req, res) {
             color: #2c3e50;
         }
         
+=======
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -256,6 +285,7 @@ export default function handler(req, res) {
             align-self: flex-start;
             margin-bottom: 10px;
         }
+<<<<<<< HEAD
         
         .resume-preview {
             background: #e8f4f8;
@@ -267,11 +297,17 @@ export default function handler(req, res) {
             max-height: 100px;
             overflow-y: auto;
         }
+=======
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+<<<<<<< HEAD
+=======
+            <a href="/api/index-zh" class="language-link">中文版</a>
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
             <div>🇬🇧 UK Global Talent Visa Assistant</div>
             <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Digital Technology Route - Tech Nation</div>
         </div>
@@ -308,7 +344,10 @@ export default function handler(req, res) {
                 this.userProfile = {};
                 this.isLoading = false;
                 this.resumeContent = null;
+<<<<<<< HEAD
                 this.resumeAnalysis = null;
+=======
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                 
                 this.init();
             }
@@ -332,7 +371,11 @@ export default function handler(req, res) {
                 this.addMessage('👋 Welcome! I will guide you through the UK Global Talent Visa application for Digital Technology.', 'bot');
                 
                 setTimeout(() => {
+<<<<<<< HEAD
                     this.addMessage('ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. **Disclaimer:** This is general guidance, not legal advice.', 'bot');
+=======
+                    this.addMessage('ℹ️ **About the UK Global Talent Visa:** This visa lets highly skilled individuals in digital technology live and work in the UK without needing employer sponsorship, while also giving their dependants full work and study rights. It offers flexibility, a pathway to settlement, and freedom to change jobs or be self-employed. **Disclaimer:** This is general guidance, not legal advice. For formal immigration advice, please speak with an OISC-registered adviser or solicitor.', 'bot');
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                 }, 1000);
                 
                 setTimeout(() => {
@@ -360,7 +403,11 @@ export default function handler(req, res) {
             async handleTopicChoice(topic) {
                 const topicQuestions = {
                     'eligibility': 'What are the eligibility requirements for the Digital Technology route?',
+<<<<<<< HEAD
                     'process': 'How does the Tech Nation application process work? Please include all costs.',
+=======
+                    'process': 'How does the Tech Nation application process work? It costs 766 GBP to apply.',
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                     'documents': 'What documents and evidence do I need to prepare?',
                     'timeline': 'How long does the entire process take?'
                 };
@@ -444,14 +491,22 @@ export default function handler(req, res) {
                 this.addProgressIndicator('Step 3/5: Resume Upload');
                 
                 setTimeout(() => {
+<<<<<<< HEAD
                     this.addMessage('To give you personalized guidance, please upload your resume (PDF format). This will help me analyze your recent positions and provide specific recommendations.', 'bot');
+=======
+                    this.addMessage('To give you personalized guidance, please upload your resume (PDF format). This will help me understand your background and provide specific recommendations for strengthening your Tech Nation application.', 'bot');
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                     this.enableResumeUpload();
                 }, 1000);
             }
             
             enableResumeUpload() {
                 this.uploadBtn.style.display = 'block';
+<<<<<<< HEAD
                 this.addMessage('Click the "Upload Resume" button below when you\\'re ready. Don\\'t have your resume ready? You can skip this step.', 'bot');
+=======
+                this.addMessage('Click the "Upload Resume" button below when you\\'re ready. Don\\'t have your resume ready? You can skip this step and still get general guidance.', 'bot');
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                 
                 const buttonHtml = '<div class="button-group">' +
                     '<button class="workflow-button" onclick="bot.skipResume()">Skip Resume Upload</button>' +
@@ -477,7 +532,11 @@ export default function handler(req, res) {
                     return;
                 }
                 
+<<<<<<< HEAD
                 if (file.size > 10 * 1024 * 1024) {
+=======
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                     this.uploadStatus.textContent = '❌ File too large (max 10MB)';
                     return;
                 }
@@ -486,6 +545,7 @@ export default function handler(req, res) {
                 this.addMessage('Resume uploaded: ' + file.name, 'user');
                 
                 try {
+<<<<<<< HEAD
                     // Try backend processing first
                     const backendResult = await this.uploadToBackend(file);
                     if (backendResult.success && backendResult.textExtracted) {
@@ -493,10 +553,19 @@ export default function handler(req, res) {
                         this.uploadStatus.textContent = '✅ Resume processed successfully';
                         this.analyzeAndShowResume();
                         this.addMessage('✅ Resume processed successfully! I\\'ve analyzed your background and can now provide personalized advice.', 'bot');
+=======
+                    // Extract text from PDF
+                    const text = await this.extractTextFromPDF(file);
+                    if (text && text.length > 100) {
+                        this.resumeContent = text;
+                        this.uploadStatus.textContent = '✅ Resume processed!';
+                        this.addMessage('✅ Resume processed successfully! I can now give you personalized recommendations.', 'bot');
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                         
                         setTimeout(() => {
                             this.generateFeedback();
                         }, 1500);
+<<<<<<< HEAD
                         return;
                     }
                     
@@ -517,6 +586,11 @@ export default function handler(req, res) {
                     
                     throw new Error('Could not extract sufficient text');
                     
+=======
+                    } else {
+                        throw new Error('Could not extract text');
+                    }
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                 } catch (error) {
                     console.error('PDF processing error:', error);
                     this.uploadStatus.textContent = '⚠️ Processing failed, continuing...';
@@ -528,6 +602,7 @@ export default function handler(req, res) {
                 }
             }
             
+<<<<<<< HEAD
             analyzeAndShowResume() {
                 if (!this.resumeContent) return;
                 
@@ -644,11 +719,14 @@ export default function handler(req, res) {
                 }
             }
             
+=======
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
             async extractTextFromPDF(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         try {
+<<<<<<< HEAD
                             // For demo purposes - in production you'd use PDF.js
                             const simulatedText = 'Resume content extracted from ' + file.name + ':\\n\\n' +
                                 'Senior Software Engineer with 5+ years experience at Google.\\n' +
@@ -657,6 +735,18 @@ export default function handler(req, res) {
                                 'Previous roles: Software Developer at Microsoft, Technical Lead at startup.\\n' +
                                 'Educational background: Computer Science degree from top university.\\n' +
                                 'Notable achievements: Published research papers, open source contributions.';
+=======
+                            // Simple text extraction - in a real app you'd use pdf.js or similar
+                            const text = 'PDF content: ' + file.name + ' (size: ' + file.size + ' bytes)';
+                            // For demo purposes, we'll simulate extracted text
+                            const simulatedText = \`Resume content extracted from \${file.name}:
+                            
+Professional experience in digital technology sector.
+Skills and achievements relevant to Tech Nation application.
+Educational background and certifications.
+Previous work experience and projects.
+Technical skills and business accomplishments.\`;
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                             resolve(simulatedText);
                         } catch (error) {
                             reject(error);
@@ -672,6 +762,7 @@ export default function handler(req, res) {
                 this.addProgressIndicator('Step 4/5: Analysis');
                 
                 setTimeout(async () => {
+<<<<<<< HEAD
                     let analysisPrompt = 'Based on my profile: ' + this.userProfile.experience + ' years experience, ' + this.userProfile.role + ' role.';
                     
                     // Add resume analysis if available
@@ -692,6 +783,10 @@ export default function handler(req, res) {
                     analysisPrompt += '\\n\\nPlease provide specific actionable steps I need to take to strengthen my Tech Nation application. Based on my background, recommend: 1) Which application route (Exceptional Talent vs Exceptional Promise) 2) The 2 best assessment criteria for me 3) Specific evidence I should collect based on my recent roles 4) Next action steps.';
                     
                     console.log('Sending analysis prompt:', analysisPrompt);
+=======
+                    const analysisPrompt = \`Based on my profile: \${this.userProfile.experience} years experience, \${this.userProfile.role} role. Please provide specific actionable steps I need to take to strengthen my Tech Nation application. Focus on what I need to DO, not my chances of success.\`;
+                    
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                     await this.sendToAPI(analysisPrompt);
                     
                     setTimeout(() => {
@@ -708,7 +803,11 @@ export default function handler(req, res) {
                 this.messageInput.placeholder = 'Ask me anything about Tech Nation application...';
                 this.messageInput.focus();
                 
+<<<<<<< HEAD
                 this.addMessage('Great! Now you can ask me any specific questions about the Tech Nation application process. I understand your background and can provide personalized advice! 💬', 'bot');
+=======
+                this.addMessage('Great! Now you can ask me any specific questions about the Tech Nation application process. I will use the official guidance and your profile information to help you! 💬', 'bot');
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
             }
             
             async handleSend() {
@@ -730,6 +829,7 @@ export default function handler(req, res) {
                 const typingElement = this.addMessage('Thinking...', 'typing');
                 
                 try {
+<<<<<<< HEAD
                     const payload = {
                         message: message,
                         userId: this.getUserId()
@@ -749,6 +849,16 @@ export default function handler(req, res) {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
+=======
+                    const response = await fetch('/api/chat-en', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: message,
+                            userId: this.getUserId(),
+                            resumeContent: this.resumeContent
+                        })
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                     });
                     
                     const data = await response.json();
@@ -776,6 +886,7 @@ export default function handler(req, res) {
             addMessage(text, sender) {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message', sender + '-message');
+<<<<<<< HEAD
                 
                 // Add markdown rendering for bot messages
                 if (sender === 'bot') {
@@ -784,12 +895,16 @@ export default function handler(req, res) {
                     messageElement.textContent = text;
                 }
                 
+=======
+                messageElement.textContent = text;
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
                 this.chat.appendChild(messageElement);
                 this.scrollToBottom();
                 
                 return messageElement;
             }
             
+<<<<<<< HEAD
             renderMarkdown(text) {
                 // Convert markdown to HTML
                 let html = text
@@ -824,6 +939,8 @@ export default function handler(req, res) {
                 return html;
             }
             
+=======
+>>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
             addProgressIndicator(step) {
                 const progressElement = document.createElement('div');
                 progressElement.classList.add('progress-indicator');
