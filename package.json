@@ -1,46 +1,12 @@
 {
-<<<<<<< HEAD
-  "name": "chinese-visa-bot",
+  "name": "visa-chatbot",
   "version": "1.0.0",
-  "description": "英国全球人才签证助手 - 中文版",
-  "type": "module",
+  "description": "UK Global Talent Visa Assistant",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Build complete'",
-    "start": "vercel dev"
+    "build": "echo 'No build needed'"
   },
   "dependencies": {
-    "openai": "^4.24.0",
-    "pdf-parse": "^1.1.1",
-    "formidable": "^3.5.1",
-    "@vercel/kv": "^1.0.1"
-  },
-  "engines": {
-    "node": "18.x"
+    "openai": "^4.0.0"
   }
 }
-=======
-  "name": "global-talent-visa-bot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@langchain/community": "^0.3.55",
-    "@langchain/openai": "^0.6.11",
-    "@vercel/kv": "^3.0.0",
-    "body-parser": "^2.2.0",
-    "cheerio": "^1.1.2",
-    "formidable": "^3.5.1",
-    "langchain": "^0.2.11",
-    "openai": "^4.104.0",
-    "pdf-parse": "^1.1.1"
-  }
-}
->>>>>>> f1030aa399405e9f6e035f37c9717c58678c8ffb
