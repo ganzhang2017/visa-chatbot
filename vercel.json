@@ -1,18 +1,7 @@
 {
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/api/index-en"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/$1"
-    }
-  ]
+  }
 }
