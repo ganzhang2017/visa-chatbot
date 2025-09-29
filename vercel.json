@@ -1,24 +1,8 @@
 {
   "functions": {
-    "api/chat-zh.js": {
-      "maxDuration": 60
-    },
-    "api/guide_content.js": {
-      "maxDuration": 10
-    },
-    "api/upload.js": {
+    "api/**/*.js": {
+      "memory": 1024,
       "maxDuration": 30
-    },
-    "api/index.js": {
-      "maxDuration": 5
     }
-  },
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/api/index"
-    }
-  ],
-  "buildCommand": "echo 'No build step required'",
-  "outputDirectory": "."
+  }
 }
