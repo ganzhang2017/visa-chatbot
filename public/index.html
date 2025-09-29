@@ -3,13 +3,23 @@
 <head>
     <title>UK Visa Assistant</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        .btn { display: inline-block; padding: 15px 30px; margin: 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; }
+        .container { background: white; border-radius: 15px; padding: 40px; max-width: 500px; margin: 50px auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .btn { display: inline-block; padding: 15px 30px; margin: 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; transition: all 0.2s; }
+        .btn:hover { background: #5a67d8; transform: translateY(-2px); }
+        h1 { color: #2d3748; margin-bottom: 10px; }
+        p { color: #4a5568; margin-bottom: 30px; }
     </style>
 </head>
 <body>
-    <h1>UK Global Talent Visa Assistant</h1>
-    <a href="/api/index-en" class="btn">English Version 🇬🇧</a>
-    <a href="/api/index" class="btn">中文版 🇨🇳</a>
+    <div class="container">
+        <h1>🇬🇧 UK Global Talent Visa Assistant</h1>
+        <p>Digital Technology Route - Tech Nation</p>
+        <p>Choose your preferred language:</p>
+        
+        <a href="/api/index-en" class="btn">English Version 🇬🇧</a>
+        <br>
+        <a href="https://gtvvisa-chatbot-chinese-version.vercel.app/" class="btn" target="_blank">中文版 🇨🇳</a>
+    </div>
 </body>
 </html>
