@@ -301,18 +301,31 @@ async function getAIResponse(message, resumeContent, resumeAnalysis) {
     const client = getClient();
     if (!client) return null;
 
-    let systemPrompt = `You are a UK Global Talent Visa expert for Digital Technology. Provide concise, personalized advice in English.`;
+    let systemPrompt = `You are a UK Global Talent Visa expert for Digital Technology. Provide detailed, personalized advice in English.`;
     
     if (resumeContent || resumeAnalysis) {
-        systemPrompt += `\n\nUser background:`;
+        systemPrompt += `\n\nUser's Profile:`;
         if (resumeAnalysis) {
-            if (resumeAnalysis.currentRole) systemPrompt += `\n- Role: ${resumeAnalysis.currentRole}`;
-            if (resumeAnalysis.company) systemPrompt += `\n- Company: ${resumeAnalysis.company}`;
-            if (resumeAnalysis.skills?.length) systemPrompt += `\n- Skills: ${resumeAnalysis.skills.slice(0, 5).join(', ')}`;
-            if (resumeAnalysis.estimatedYears > 0) systemPrompt += `\n- Experience: ${resumeAnalysis.estimatedYears} years`;
+            if (resumeAnalysis.name) systemPrompt += `\n- Name: ${resumeAnalysis.name}`;
+            if (resumeAnalysis.currentRole) systemPrompt += `\n- Current Role: ${resumeAnalysis.currentRole}`;
+            if (resumeAnalysis.company) systemPrompt += `\n- Current Company: ${resumeAnalysis.company}`;
+            if (resumeAnalysis.skills?.length) systemPrompt += `\n- Key Skills: ${resumeAnalysis.skills.join(', ')}`;
+            if (resumeAnalysis.estimatedYears > 0) systemPrompt += `\n- Years of Experience: ${resumeAnalysis.estimatedYears} years`;
+            if (resumeAnalysis.previousRoles?.length) {
+                systemPrompt += `\n- Previous Roles: ${resumeAnalysis.previousRoles.slice(0, 3).map(r => `${r.title} at ${r.company}`).join('; ')}`;
+            }
         }
-        if (resumeContent) systemPrompt += `\n\nResume: ${resumeContent.substring(0, 600)}`;
-        systemPrompt += `\n\nMust: 1) Mention their role/company, 2) Recommend route (Talent vs Promise), 3) Suggest 2 criteria, 4) List 3 actions. Be concise.`;
+        if (resumeContent) systemPrompt += `\n\nFull Resume Content:\n${resumeContent.substring(0, 1500)}`;
+        
+        systemPrompt += `\n\nIMPORTANT RESPONSE REQUIREMENTS:
+1. START by greeting them by name and acknowledging their current position and company
+2. Analyze their most recent role in detail - what specific achievements, technologies, or metrics from this role can strengthen their visa application
+3. Recommend which route they should apply for (Exceptional Talent vs Exceptional Promise) based on their experience level
+4. Identify their 2 strongest evaluation criteria with specific examples from their resume
+5. Provide 3-5 concrete next actions with specifics from their background
+6. Be warm, personalized, and reference specific details from their experience
+
+Format: Use paragraphs and bullet points. Be thorough but organized.`;
     }
 
     const models = ["google/gemini-2.0-flash-exp:free", "x-ai/grok-4-fast:free"];
@@ -326,10 +339,10 @@ async function getAIResponse(message, resumeContent, resumeAnalysis) {
                         { role: "system", content: systemPrompt },
                         { role: "user", content: message }
                     ],
-                    max_tokens: 800,
+                    max_tokens: 1500,
                     temperature: 0.7,
                 }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 12000))
             ]);
             console.log(`AI success with ${model}`);
             return completion?.choices[0]?.message?.content;
