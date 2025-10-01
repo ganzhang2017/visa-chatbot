@@ -328,7 +328,12 @@ async function getAIResponse(message, resumeContent, resumeAnalysis) {
 Format: Use paragraphs and bullet points. Be thorough but organized.`;
     }
 
-    const models = ["google/gemini-2.0-flash-exp:free", "x-ai/grok-4-fast:free"];
+    // Try models with longer timeout for resume analysis
+    const models = [
+        "x-ai/grok-4-fast:free",
+        "google/gemini-2.0-flash-exp:free",
+        "deepseek/deepseek-chat-v3.1:free"
+    ];
     
     for (const model of models) {
         try {
@@ -342,12 +347,13 @@ Format: Use paragraphs and bullet points. Be thorough but organized.`;
                     max_tokens: 1500,
                     temperature: 0.7,
                 }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 12000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 25000))
             ]);
             console.log(`AI success with ${model}`);
             return completion?.choices[0]?.message?.content;
         } catch (err) {
             console.log(`${model} failed: ${err.message}`);
+            // Continue to next model
         }
     }
     return null;
