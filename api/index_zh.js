@@ -1,6 +1,4 @@
-
-    res.status(200).send(html);
-}// api/index-zh.js - Chinese Version Frontend
+// api/index-zh.js - Chinese Version Frontend with Contact Info
 export default function handler(req, res) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     
@@ -32,6 +30,7 @@ export default function handler(req, res) {
             height: 600px;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .header {
@@ -65,6 +64,7 @@ export default function handler(req, res) {
         .chat {
             flex: 1;
             padding: 20px;
+            padding-bottom: 50px;
             overflow-y: auto;
             background: #f8f9fa;
             display: flex;
@@ -249,6 +249,47 @@ export default function handler(req, res) {
             align-self: flex-start;
             margin-bottom: 10px;
         }
+        
+        .contact-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 25px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            z-index: 1000;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .contact-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+        
+        .contact-badge .icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .contact-badge .text {
+            font-weight: 500;
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
@@ -276,6 +317,11 @@ export default function handler(req, res) {
             </div>
         </div>
     </div>
+    
+    <a href="mailto:info@sagefyai.com" class="contact-badge" title="有问题联系我们">
+        <div class="icon">✉️</div>
+        <div class="text">info@sagefyai.com</div>
+    </a>
     
     <script>
         class ChineseGuidedBot {
@@ -635,3 +681,6 @@ export default function handler(req, res) {
     </script>
 </body>
 </html>`;
+
+    res.status(200).send(html);
+}
