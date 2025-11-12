@@ -330,7 +330,7 @@ Format: Use paragraphs and bullet points. Be thorough but organized.`;
 
     // Try models with longer timeout for resume analysis
     const models = [
-        "x-ai/grok-4-fast:free",
+        "openai/gpt-oss-20b:free",
         "google/gemini-2.0-flash-exp:free",
         "deepseek/deepseek-chat-v3.1:free"
     ];
